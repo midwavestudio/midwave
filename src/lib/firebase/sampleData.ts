@@ -1,0 +1,126 @@
+import { Project } from './projectUtils';
+
+// Log when this file is imported
+console.log('sampleData.ts is being imported');
+
+// Sample project data for development and initialization
+export const sampleProjects: Project[] = [
+  {
+    id: 'luxury-real-estate',
+    title: 'Skyline Properties',
+    slug: 'skyline-properties',
+    category: 'Real Estate',
+    description: 'A premium real estate platform showcasing luxury properties with immersive 3D tours and personalized client portals.',
+    fullDescription: 'Skyline Properties is a premium real estate platform designed for high-end property listings. The platform features immersive 3D virtual tours, personalized client portals, and advanced property filtering. We created a seamless experience that highlights the luxury aspects of each property while providing powerful tools for both agents and clients.',
+    client: 'Skyline Properties Inc.',
+    date: 'January 2023',
+    services: ['UX/UI Design', 'Web Development', 'CMS Integration'],
+    technologies: ['React', 'Next.js', 'Three.js', 'Firebase'],
+    thumbnailUrl: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2075&q=80',
+    imageUrls: [
+      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2075&q=80',
+      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2053&q=80',
+      'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+    ],
+    featured: true,
+  },
+  {
+    id: 'boutique-travel',
+    title: 'Wanderlust Expeditions',
+    slug: 'wanderlust-expeditions',
+    category: 'Travel',
+    description: 'Custom travel booking platform for curated, high-end travel experiences with AI-powered recommendations.',
+    fullDescription: 'Wanderlust Expeditions is a custom travel booking platform that specializes in curated, high-end travel experiences. The platform features AI-powered recommendations based on user preferences, seamless booking integration, and personalized itinerary creation. We designed an intuitive interface that showcases stunning destinations while making the booking process effortless.',
+    client: 'Wanderlust Travel Group',
+    date: 'March 2023',
+    services: ['UX/UI Design', 'Web Development', 'AI Integration'],
+    technologies: ['React', 'Node.js', 'TensorFlow', 'MongoDB'],
+    thumbnailUrl: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+    imageUrls: [
+      'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+    ],
+    featured: true,
+  },
+  {
+    id: 'creative-studio',
+    title: 'Lumina Studios',
+    slug: 'lumina-studios',
+    category: 'Creative',
+    description: 'Portfolio and client management system for a high-end photography studio with integrated booking and asset delivery.',
+    fullDescription: 'Lumina Studios is a comprehensive portfolio and client management system designed for a high-end photography studio. The platform features an elegant portfolio showcase, integrated booking system, and secure asset delivery portal. We created a solution that streamlines the client workflow while maintaining the studio\'s premium brand identity.',
+    client: 'Lumina Photography',
+    date: 'May 2023',
+    services: ['Brand Identity', 'Web Development', 'System Integration'],
+    technologies: ['Next.js', 'Prisma', 'PostgreSQL', 'AWS S3'],
+    thumbnailUrl: 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+    imageUrls: [
+      'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      'https://images.unsplash.com/photo-1554941829-202a0b2403b8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      'https://images.unsplash.com/photo-1593697821028-7cc59cfd7399?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+    ],
+    featured: false,
+  },
+  {
+    id: 'luxury-brand',
+    title: 'Elysian Collection',
+    slug: 'elysian-collection',
+    category: 'E-Commerce',
+    description: 'Bespoke e-commerce platform for a luxury fashion brand with personalized shopping experiences and exclusive member access.',
+    fullDescription: 'Elysian Collection is a bespoke e-commerce platform designed for a luxury fashion brand. The platform features personalized shopping experiences, exclusive member access, and seamless checkout processes. We created an elegant digital storefront that reflects the brand\'s premium positioning while providing powerful e-commerce capabilities.',
+    client: 'Elysian Fashion House',
+    date: 'July 2023',
+    services: ['UX/UI Design', 'E-commerce Development', 'Payment Integration'],
+    technologies: ['React', 'Shopify', 'Tailwind CSS', 'Stripe'],
+    thumbnailUrl: 'https://images.unsplash.com/photo-1445205170230-053b83016050?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2071&q=80',
+    imageUrls: [
+      'https://images.unsplash.com/photo-1445205170230-053b83016050?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2071&q=80',
+      'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      'https://images.unsplash.com/photo-1469334031218-e382a71b716b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+    ],
+    featured: true,
+  },
+  {
+    id: 'wellness-app',
+    title: 'Serenity Wellness',
+    slug: 'serenity-wellness',
+    category: 'Health & Wellness',
+    description: 'Mobile application for premium wellness services featuring appointment booking, personalized wellness plans, and progress tracking.',
+    fullDescription: 'Serenity Wellness is a mobile application designed for premium wellness services. The app features appointment booking, personalized wellness plans, and progress tracking. We created an intuitive and calming user experience that helps users achieve their wellness goals while connecting them with premium service providers.',
+    client: 'Serenity Wellness Group',
+    date: 'September 2023',
+    services: ['Mobile App Design', 'App Development', 'Health API Integration'],
+    technologies: ['React Native', 'Firebase', 'HealthKit', 'Google Fit'],
+    thumbnailUrl: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2020&q=80',
+    imageUrls: [
+      'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2020&q=80',
+      'https://images.unsplash.com/photo-1518611012118-696072aa579a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80',
+    ],
+    featured: false,
+  },
+  {
+    id: 'culinary-platform',
+    title: 'Gastronome',
+    slug: 'gastronome',
+    category: 'Food & Beverage',
+    description: 'Digital platform connecting high-end restaurants with discerning diners, featuring reservation management and culinary experiences.',
+    fullDescription: 'Gastronome is a digital platform that connects high-end restaurants with discerning diners. The platform features reservation management, exclusive culinary experiences, and personalized recommendations. We created an elegant interface that showcases culinary artistry while providing powerful tools for both restaurants and diners.',
+    client: 'Gastronome Ventures',
+    date: 'November 2023',
+    services: ['UX/UI Design', 'Web Development', 'Reservation System'],
+    technologies: ['Vue.js', 'Node.js', 'MongoDB', 'Twilio'],
+    thumbnailUrl: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+    imageUrls: [
+      'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      'https://images.unsplash.com/photo-1559339352-11d035aa65de?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2074&q=80',
+    ],
+    featured: false,
+  },
+];
+
+// Log the number of sample projects
+console.log(`sampleData.ts: ${sampleProjects.length} sample projects available`);
+console.log(`sampleData.ts: ${sampleProjects.filter(p => p.featured).length} featured sample projects available`); 
