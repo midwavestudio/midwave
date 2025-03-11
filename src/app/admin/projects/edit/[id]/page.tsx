@@ -11,7 +11,15 @@ import { getDocument, updateDocument } from '@/lib/firebase/firebaseUtils';
 import { Project } from '@/lib/firebase/projectUtils';
 import { compressImage } from '@/lib/utils/imageUtils';
 
-export default function EditProject({ params }: { params: { id: string }; searchParams?: any }) {
+// Define the props type to match Next.js's expectations
+type EditProjectProps = {
+  params: {
+    id: string;
+  };
+  searchParams?: Record<string, string | string[] | undefined>;
+};
+
+export default function EditProject({ params }: EditProjectProps) {
   const router = useRouter();
   const { id } = params;
   
