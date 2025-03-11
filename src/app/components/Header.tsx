@@ -44,21 +44,21 @@ const Header = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#09090b] border-b border-[#b85a00]/20 h-56">
-      <div className="container mx-auto h-full">
+      <div className="container mx-auto h-full px-0">
         <div className="flex items-center justify-between h-full">
-          <Link href="/" className="h-56 flex items-center">
+          <Link href="/" className="h-56 flex items-center p-0 m-0">
             <Image 
               src="/images/midwave-logo.png" 
               alt="Midwave Studio Logo" 
               width={1600} 
               height={400} 
               priority
-              className="h-56 w-auto" 
+              className="h-56 w-auto object-contain" 
             />
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6 pr-4">
+          <nav className="hidden md:flex items-center gap-6 pr-6">
             <NavLink href="/">Home</NavLink>
             <NavLink href="/services">Services</NavLink>
             <NavLink href="/about">About</NavLink>
