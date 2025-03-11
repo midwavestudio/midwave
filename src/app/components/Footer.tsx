@@ -25,13 +25,13 @@ const Footer = () => {
       <div className="container mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-1 md:mb-0">
-            <Link href="/" className="block h-36">
+            <Link href="/" className="block h-20">
               <Image 
                 src="/images/midwave-logo.png" 
                 alt="Midwave Studio Logo" 
-                width={1200} 
-                height={300} 
-                className="h-36 w-auto"
+                width={800} 
+                height={200} 
+                className="h-20 w-auto"
               />
             </Link>
           </div>

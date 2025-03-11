@@ -43,17 +43,17 @@ const Header = () => {
   }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#09090b] border-b border-[#b85a00]/20 h-56">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#09090b] border-b border-[#b85a00]/20 h-24">
       <div className="container mx-auto h-full px-0">
         <div className="flex items-center justify-between h-full">
-          <Link href="/" className="h-56 flex items-center p-0 m-0">
+          <Link href="/" className="h-24 flex items-center p-0 m-0">
             <Image 
               src="/images/midwave-logo.png" 
               alt="Midwave Studio Logo" 
-              width={1600} 
-              height={400} 
+              width={800} 
+              height={200} 
               priority
-              className="h-56 w-auto object-contain" 
+              className="h-20 w-auto object-contain" 
             />
           </Link>
 
