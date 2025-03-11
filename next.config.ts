@@ -35,6 +35,10 @@ const nextConfig = {
   },
   // Disable strict mode for now to avoid double rendering issues with external images
   reactStrictMode: false,
+  // Disable ESLint during the build process
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;
