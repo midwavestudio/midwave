@@ -50,8 +50,8 @@ const Header = () => {
             <Image 
               src="/images/midwave-logo.png" 
               alt="Midwave Studio Logo" 
-              width={800} 
-              height={200} 
+              width={2400} 
+              height={600} 
               priority
               className="h-20 w-auto object-contain" 
             />

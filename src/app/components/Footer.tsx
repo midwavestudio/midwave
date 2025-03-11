@@ -29,8 +29,8 @@ const Footer = () => {
               <Image 
                 src="/images/midwave-logo.png" 
                 alt="Midwave Studio Logo" 
-                width={800} 
-                height={200} 
+                width={2400} 
+                height={600} 
                 className="h-20 w-auto"
               />
             </Link>
