@@ -4,16 +4,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { addSampleProjectsToFirestore } from '@/lib/firebase/firebaseUtils';
 
 export default function FirebaseInit() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [steps, setSteps] = useState<string[]>([]);
-  const [addingProjects, setAddingProjects] = useState(false);
-  const [projectsAdded, setProjectsAdded] = useState(false);
-  const [projectsMessage, setProjectsMessage] = useState('');
   const router = useRouter();
 
   const initializeFirebase = async () => {
@@ -45,30 +41,11 @@ export default function FirebaseInit() {
     }
   };
 
-  const handleAddSampleProjects = async () => {
-    try {
-      setAddingProjects(true);
-      setProjectsMessage('Adding sample projects to Firestore...');
-      
-      const result = await addSampleProjectsToFirestore();
-      
-      setProjectsAdded(true);
-      setProjectsMessage(result.message);
-    } catch (error) {
-      setProjectsAdded(false);
-      const errorMessage = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
-      setProjectsMessage(`Error adding sample projects: ${errorMessage}`);
-      console.error('Error adding sample projects:', error);
-    } finally {
-      setAddingProjects(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#09090b]">
       <Header />
       
-      <main className="pt-24 pb-16">
+      <main className="pt-48 pb-16">
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-2xl mx-auto bg-[#0f0f13] rounded-lg p-8 shadow-lg">
             <h1 className="text-3xl font-bold text-white mb-6">Firebase Initialization</h1>
@@ -120,48 +97,25 @@ export default function FirebaseInit() {
             )}
             
             {status === 'success' && (
-              <>
-                <div className="mt-8 p-6 bg-[#0a0a0a] rounded-lg border border-[#b85a00]/20">
-                  <h3 className="text-xl font-bold text-white mb-4">Add Sample Projects</h3>
-                  <p className="text-gray-300 mb-4">
-                    After setting up Firebase, you can add sample projects to your Firestore database to get started quickly.
-                  </p>
-                  
+              <div className="mt-8">
+                <p className="text-gray-300 mb-4">
+                  After completing the setup steps above, you can go to the admin page to add your own projects.
+                </p>
+                <div className="flex space-x-4">
                   <button
-                    onClick={handleAddSampleProjects}
-                    disabled={addingProjects}
-                    className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                      addingProjects
-                        ? 'bg-gray-600 text-gray-300 cursor-not-allowed'
-                        : 'bg-[#b85a00] text-white hover:bg-[#a04d00]'
-                    }`}
+                    onClick={() => router.push('/admin/projects/new')}
+                    className="px-6 py-3 rounded-lg font-medium bg-[#b85a00] text-white hover:bg-[#a04d00] transition-colors"
                   >
-                    {addingProjects ? 'Adding...' : 'Add Sample Projects'}
+                    Add New Project
                   </button>
-                  
-                  {projectsMessage && (
-                    <div className={`mt-4 p-3 rounded-lg ${
-                      addingProjects ? 'bg-blue-900/20 text-blue-300' :
-                      projectsAdded ? 'bg-green-900/20 text-green-300' :
-                      'bg-yellow-900/20 text-yellow-300'
-                    }`}>
-                      <p>{projectsMessage}</p>
-                    </div>
-                  )}
-                </div>
-                
-                <div className="mt-8">
-                  <p className="text-gray-300 mb-4">
-                    After completing the setup steps above, you can go to the projects page to see your projects.
-                  </p>
                   <button
                     onClick={() => router.push('/projects')}
                     className="px-6 py-3 rounded-lg font-medium bg-white/10 text-white hover:bg-white/20 transition-colors"
                   >
-                    Go to Projects
+                    View Projects
                   </button>
                 </div>
-              </>
+              </div>
             )}
           </div>
         </div>

@@ -165,26 +165,20 @@ export const getProjects = async (): Promise<Project[]> => {
       console.error('Error fetching from Firestore:', firestoreError);
     }
     
-    // If we have projects, return them
-    if (allProjects.length > 0) {
-      console.log('Returning total projects:', allProjects.length);
-      
-      // Sort by order
-      return allProjects.sort((a, b) => {
-        const orderA = a.order || 0;
-        const orderB = b.order || 0;
-        return orderA - orderB;
-      });
-    }
+    // Return the projects we found, even if the array is empty
+    console.log('Returning total projects:', allProjects.length);
     
-    // If no projects found, use sample projects as fallback
-    console.log('No projects found, using sample projects');
-    return sampleProjects;
+    // Sort by order
+    return allProjects.sort((a, b) => {
+      const orderA = a.order || 0;
+      const orderB = b.order || 0;
+      return orderA - orderB;
+    });
   } catch (error) {
     console.error('Error getting projects:', error);
     
-    // If all else fails, return sample projects
-    return sampleProjects;
+    // Return an empty array if there was an error
+    return [];
   }
 };
 
@@ -246,18 +240,10 @@ export const getFeaturedProjects = async (): Promise<Project[]> => {
     const featuredProjects = allProjects.filter(project => project.featured);
     console.log('Featured projects found:', featuredProjects.length);
     
-    // If we have featured projects, return them
-    if (featuredProjects.length > 0) {
-      return featuredProjects;
-    }
-    
-    // If no featured projects found, use sample featured projects as fallback
-    console.log('No featured projects found, using sample featured projects');
-    return sampleProjects.filter(project => project.featured);
+    // Return featured projects, even if the array is empty
+    return featuredProjects;
   } catch (error) {
     console.error('Error getting featured projects:', error);
-    
-    // If all else fails, return sample featured projects
-    return sampleProjects.filter(project => project.featured);
+    return [];
   }
 }; 

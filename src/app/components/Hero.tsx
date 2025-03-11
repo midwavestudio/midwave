@@ -2,36 +2,10 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 
 const Hero = () => {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({
-        x: e.clientX,
-        y: e.clientY
-      });
-    };
-    
-    window.addEventListener('mousemove', handleMouseMove);
-    
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, []);
-
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#09090b] pt-16">
-      {/* Dynamic background blur elements that follow mouse movement */}
-      <div 
-        className="absolute inset-0 z-0 opacity-70"
-        style={{
-          background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(184, 90, 0, 0.15) 0%, rgba(9, 9, 11, 0) 50%)`,
-        }}
-      />
-      
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#09090b] pt-36">
       {/* Fixed background elements */}
       <div className="absolute inset-0 z-0">
         {/* Main amber glow */}

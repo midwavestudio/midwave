@@ -65,10 +65,8 @@ export default function AdminProjects() {
       
       setMessageType('error');
       
-      // Use sample projects as fallback when there's an error
-      import('@/lib/firebase/sampleData').then(({ sampleProjects }) => {
-        setProjects(sampleProjects);
-      });
+      // Set empty projects array instead of using sample projects
+      setProjects([]);
     } finally {
       setIsLoading(false);
     }

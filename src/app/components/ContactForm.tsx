@@ -55,15 +55,15 @@ const ContactForm = () => {
   };
   
   return (
-    <div className="bg-gray-800 rounded-lg p-8 border border-gray-700">
+    <div className="bg-[#0f0f13] rounded-lg p-8 border border-[#b85a00]/20">
       {isSubmitted ? (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="text-center py-12"
         >
-          <div className="bg-amber-500/20 p-4 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <div className="bg-[#b85a00]/20 p-4 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+            <svg className="w-10 h-10 text-[#b85a00]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
@@ -86,7 +86,7 @@ const ContactForm = () => {
               <input
                 id="name"
                 type="text"
-                className={`w-full bg-gray-700 border ${errors.name ? 'border-red-500' : 'border-gray-600'} rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500`}
+                className={`w-full bg-[#18181b] border ${errors.name ? 'border-red-500' : 'border-[#b85a00]/20'} rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]`}
                 placeholder="Your name"
                 {...register('name', { required: 'Name is required' })}
               />
@@ -100,7 +100,7 @@ const ContactForm = () => {
               <input
                 id="email"
                 type="email"
-                className={`w-full bg-gray-700 border ${errors.email ? 'border-red-500' : 'border-gray-600'} rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500`}
+                className={`w-full bg-[#18181b] border ${errors.email ? 'border-red-500' : 'border-[#b85a00]/20'} rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]`}
                 placeholder="Your email"
                 {...register('email', { 
                   required: 'Email is required',
@@ -120,7 +120,7 @@ const ContactForm = () => {
               <input
                 id="company"
                 type="text"
-                className="w-full bg-gray-700 border border-gray-600 rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full bg-[#18181b] border border-[#b85a00]/20 rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]"
                 placeholder="Your company"
                 {...register('company')}
               />
@@ -131,7 +131,7 @@ const ContactForm = () => {
               <input
                 id="phone"
                 type="tel"
-                className="w-full bg-gray-700 border border-gray-600 rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full bg-[#18181b] border border-[#b85a00]/20 rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]"
                 placeholder="Your phone number"
                 {...register('phone')}
               />
@@ -147,7 +147,7 @@ const ContactForm = () => {
                     id={`service-${service.id}`}
                     type="checkbox"
                     value={service.id}
-                    className="w-5 h-5 bg-gray-700 border-gray-600 rounded text-amber-500 focus:ring-amber-500"
+                    className="w-5 h-5 bg-[#18181b] border-[#b85a00]/20 rounded text-[#b85a00] focus:ring-[#b85a00]"
                     {...register('services')}
                   />
                   <label htmlFor={`service-${service.id}`} className="ml-2 text-gray-300">
@@ -163,7 +163,7 @@ const ContactForm = () => {
             <textarea
               id="message"
               rows={5}
-              className={`w-full bg-gray-700 border ${errors.message ? 'border-red-500' : 'border-gray-600'} rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500`}
+              className={`w-full bg-[#18181b] border ${errors.message ? 'border-red-500' : 'border-[#b85a00]/20'} rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]`}
               placeholder="Tell us about your project"
               {...register('message', { required: 'Message is required' })}
             ></textarea>

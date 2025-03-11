@@ -541,60 +541,11 @@ export const listFiles = async (path: string) => {
 };
 
 /**
- * Add sample projects to Firestore if they don't already exist
+ * Function to guide users to add their own real projects instead of sample projects
  */
 export const addSampleProjectsToFirestore = async (): Promise<{ success: boolean; message: string }> => {
-  try {
-    // Check if projects already exist
-    const projectsRef = collection(db, 'projects');
-    const snapshot = await getDocs(projectsRef);
-    
-    if (!snapshot.empty) {
-      return { 
-        success: true, 
-        message: `${snapshot.size} projects already exist in Firestore. No sample projects were added.` 
-      };
-    }
-    
-    // Add sample projects to Firestore
-    const addedProjects = [];
-    
-    for (const project of sampleProjects) {
-      // Check if project with this slug already exists
-      const slugQuery = query(projectsRef, where('slug', '==', project.slug));
-      const slugSnapshot = await getDocs(slugQuery);
-      
-      if (slugSnapshot.empty) {
-        // Remove the id field as Firestore will generate one
-        const { id, imageUrls, ...projectData } = project;
-        
-        // Add order field for sorting
-        const projectWithOrder = {
-          ...projectData,
-          order: addedProjects.length + 1,
-        };
-        
-        const docRef = await addDoc(projectsRef, projectWithOrder);
-        addedProjects.push(docRef.id);
-      }
-    }
-    
-    if (addedProjects.length > 0) {
-      return { 
-        success: true, 
-        message: `Successfully added ${addedProjects.length} sample projects to Firestore.` 
-      };
-    } else {
-      return { 
-        success: true, 
-        message: 'No new sample projects were added to Firestore.' 
-      };
-    }
-  } catch (error) {
-    console.error('Error adding sample projects to Firestore:', error);
-    return { 
-      success: false, 
-      message: `Error adding sample projects to Firestore: ${error instanceof Error ? error.message : String(error)}` 
-    };
-  }
+  return {
+    success: false, 
+    message: 'Sample projects have been removed from the application. Please add your real projects using the admin interface.'
+  };
 }; 
