@@ -72,13 +72,13 @@ const Hero = () => {
             transition={{ duration: 1, delay: 0.2 }}
             className="mb-4 md:mb-6"
           >
-            <div className="text-[#b85a00] text-sm md:text-base lg:text-lg font-medium tracking-wider uppercase mb-4 md:mb-6">
+            <div className="text-[#b85a00] text-base md:text-lg lg:text-xl font-semibold tracking-wider uppercase mb-4 md:mb-6">
               Design & Development Agency
             </div>
           </motion.div>
           
           <motion.h1 
-            className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-4 md:mb-6 tracking-tight leading-tight"
+            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-white mb-4 md:mb-6 tracking-tight leading-tight"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
@@ -88,7 +88,7 @@ const Hero = () => {
           </motion.h1>
           
           <motion.p 
-            className="text-base md:text-lg lg:text-xl text-gray-300 max-w-2xl mx-auto mb-8 md:mb-10"
+            className="text-lg md:text-xl lg:text-2xl text-gray-300 max-w-2xl mx-auto mb-8 md:mb-10 font-medium"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
@@ -107,7 +107,7 @@ const Hero = () => {
               whileTap={{ scale: 0.95 }}
               className="w-full sm:w-auto"
             >
-              <Link href="/projects" className="group inline-flex items-center justify-center w-full sm:w-auto bg-[#b85a00] text-white px-6 md:px-7 py-3 md:py-4 rounded-lg shadow-lg hover:bg-[#a04d00] transition-all duration-300">
+              <Link href="/projects" className="group inline-flex items-center justify-center w-full sm:w-auto bg-[#b85a00] text-white px-6 md:px-7 py-3 md:py-4 rounded-lg shadow-lg hover:bg-[#a04d00] transition-all duration-300 text-base md:text-lg font-medium">
                 <span>View Our Work</span>
                 <svg className="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -120,7 +120,7 @@ const Hero = () => {
               whileTap={{ scale: 0.95 }}
               className="w-full sm:w-auto"
             >
-              <Link href="/contact" className="inline-flex items-center justify-center w-full sm:w-auto bg-transparent text-white border border-white/20 backdrop-blur-sm px-6 md:px-7 py-3 md:py-4 rounded-lg hover:bg-white/5 hover:border-white/30 transition-all duration-300">
+              <Link href="/contact" className="inline-flex items-center justify-center w-full sm:w-auto bg-transparent text-white border border-white/20 backdrop-blur-sm px-6 md:px-7 py-3 md:py-4 rounded-lg hover:bg-white/5 hover:border-white/30 transition-all duration-300 text-base md:text-lg font-medium">
                 Get in Touch
               </Link>
             </motion.div>

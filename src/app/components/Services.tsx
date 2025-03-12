@@ -46,10 +46,9 @@ const Services = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Our Expertise</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              We blend artistry with technical precision to create digital experiences that elevate 
-              brands and drive business growth.
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-6">Our Expertise</h2>
+            <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto font-medium">
+              We combine strategic thinking with technical excellence to deliver solutions that drive results.
             </p>
           </motion.div>
         </div>

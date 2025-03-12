@@ -97,18 +97,17 @@ const FeaturedProjects = () => {
 
   return (
     <section className="py-24 relative z-10">
-      <div className="container mx-auto px-6">
-        <motion.div
+      <div className="container mx-auto px-4">
+        <motion.div 
+          className="text-center mb-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Featured Projects</h2>
-          <p className="text-gray-400 max-w-2xl mx-auto">
-            Explore our most impactful work, showcasing our expertise in design and development
-            across various industries.
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-6">Featured Projects</h2>
+          <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto font-medium">
+            Explore our showcase of exceptional digital experiences crafted with precision and purpose.
           </p>
           
           {/* Debug button - always visible in development */}

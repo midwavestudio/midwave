@@ -56,14 +56,19 @@ const Header = () => {
     >
       <div className="container mx-auto h-full px-4">
         <div className="flex items-center justify-between h-full">
-          <Link href="/" className={`flex items-center p-0 m-0 flex-1 mr-4 transition-all duration-300 ${scrolled ? 'h-16' : 'h-24'}`}>
+          {/* Logo - adjusted for better mobile display */}
+          <Link href="/" className={`flex items-center p-0 transition-all duration-300 ${scrolled ? 'h-16' : 'h-24'}`}>
             <Image 
               src="/images/midwave-logo.png" 
               alt="Midwave Studio Logo" 
               width={4800} 
               height={1200} 
               priority
-              className={`h-auto object-contain transition-all duration-300 ${scrolled ? 'w-[220px]' : 'w-[300px]'}`} 
+              className={`h-auto object-contain transition-all duration-300 ${
+                scrolled 
+                  ? 'w-[180px] md:w-[220px]' 
+                  : 'w-[200px] md:w-[300px]'
+              }`} 
             />
           </Link>
 
@@ -76,7 +81,7 @@ const Header = () => {
             <NavLink href="/contact">Contact</NavLink>
           </nav>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Button - positioned on the right */}
           <motion.button 
             className="md:hidden text-white focus:outline-none w-10 h-10 flex items-center justify-center rounded-full bg-[#0f0f13] border border-[#b85a00]/20"
             onClick={toggleMenu}
