@@ -37,7 +37,7 @@ const services = [
 
 const Services = () => {
   return (
-    <section className="py-24 bg-[#09090b]">
+    <section className="py-24 relative z-10">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
           <motion.div

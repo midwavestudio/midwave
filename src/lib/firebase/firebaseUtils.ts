@@ -158,6 +158,18 @@ export const addDocument = async (collectionName: string, data: any) => {
     // Ensure Firebase is initialized
     await ensureFirebaseInitialized();
     
+    // Normalize featured flag to boolean if it's a project
+    if (collectionName === 'projects' && 'featured' in data) {
+      const originalFeatured = data.featured;
+      data.featured = data.featured === true || 
+                     data.featured === 'true' || 
+                     data.featured === 'True' || 
+                     data.featured === '1' ||
+                     data.featured === 'yes' ||
+                     data.featured === 'Yes';
+      console.log(`Normalized featured flag for new project: ${originalFeatured} (${typeof originalFeatured}) -> ${data.featured} (boolean)`);
+    }
+    
     if (!isFirebaseInitialized()) {
       console.warn('Firebase not initialized, storing in localStorage');
       
@@ -183,6 +195,16 @@ export const addDocument = async (collectionName: string, data: any) => {
       // Save back to localStorage
       localStorage.setItem(`local${collectionName}`, JSON.stringify(localItems));
       
+      // Also store in a combined localProjects key for easier access
+      if (collectionName === 'projects') {
+        const existingProjects = localStorage.getItem('localProjects');
+        let localProjects = existingProjects ? JSON.parse(existingProjects) : [];
+        localProjects.push(localData);
+        localStorage.setItem('localProjects', JSON.stringify(localProjects));
+        console.log(`Added project to localStorage: ${localData.id}`);
+        console.log('Project data:', localData);
+      }
+      
       return localData;
     }
     
@@ -196,6 +218,9 @@ export const addDocument = async (collectionName: string, data: any) => {
     // Add to Firestore
     const collectionRef = collection(db, collectionName);
     const docRef = await addDoc(collectionRef, docData);
+    
+    console.log(`Added document to Firestore: ${collectionName}/${docRef.id}`);
+    console.log('Document data:', docData);
     
     return {
       id: docRef.id,
@@ -212,6 +237,18 @@ export const addDocument = async (collectionName: string, data: any) => {
       updatedAt: new Date().toISOString()
     };
     
+    // Normalize featured flag if it's a project
+    if (collectionName === 'projects' && 'featured' in data) {
+      const originalFeatured = localData.featured;
+      localData.featured = localData.featured === true || 
+                          localData.featured === 'true' || 
+                          localData.featured === 'True' || 
+                          localData.featured === '1' ||
+                          localData.featured === 'yes' ||
+                          localData.featured === 'Yes';
+      console.log(`Normalized featured flag in localStorage fallback: ${originalFeatured} -> ${localData.featured}`);
+    }
+    
     // Save to localStorage
     const localCollectionKey = `local${collectionName}`;
     const existingData = localStorage.getItem(localCollectionKey);
@@ -225,6 +262,7 @@ export const addDocument = async (collectionName: string, data: any) => {
       let localProjects = existingProjects ? JSON.parse(existingProjects) : [];
       localProjects.push(localData);
       localStorage.setItem('localProjects', JSON.stringify(localProjects));
+      console.log(`Added project to localStorage as fallback: ${localData.id}`);
     }
     
     return localData;
@@ -312,53 +350,49 @@ export const updateDocument = async (collectionName: string, documentId: string,
     // Ensure Firebase is initialized
     await ensureFirebaseInitialized();
     
+    // Normalize featured flag to boolean if it's a project
+    if (collectionName === 'projects' && 'featured' in data) {
+      const originalFeatured = data.featured;
+      data.featured = data.featured === true || 
+                     data.featured === 'true' || 
+                     data.featured === 'True' || 
+                     data.featured === '1' ||
+                     data.featured === 'yes' ||
+                     data.featured === 'Yes';
+      console.log(`Normalized featured flag for project update: ${originalFeatured} (${typeof originalFeatured}) -> ${data.featured} (boolean)`);
+    }
+    
     if (!isFirebaseInitialized()) {
       console.warn('Firebase not initialized, updating in localStorage');
       
-      // Update in localStorage
+      // Check if document exists in localStorage
       if (collectionName === 'projects') {
         const localProjects = localStorage.getItem('localProjects');
         if (localProjects) {
-          const projects = JSON.parse(localProjects);
-          const projectIndex = projects.findIndex((p: any) => p.id === documentId);
+          let projects = JSON.parse(localProjects);
           
-          if (projectIndex !== -1) {
-            // Update the project
-            projects[projectIndex] = {
-              ...projects[projectIndex],
+          // Find and update the project
+          const index = projects.findIndex((p: any) => p.id === documentId);
+          if (index !== -1) {
+            // Update the document
+            projects[index] = {
+              ...projects[index],
               ...data,
               updatedAt: new Date().toISOString()
             };
             
             // Save back to localStorage
             localStorage.setItem('localProjects', JSON.stringify(projects));
-            return projects[projectIndex];
+            
+            console.log(`Updated project in localStorage: ${documentId}`);
+            console.log('Updated data:', data);
+            
+            return projects[index];
           }
         }
       }
       
-      // Update in collection-specific localStorage
-      const localCollectionKey = `local${collectionName}`;
-      const localCollection = localStorage.getItem(localCollectionKey);
-      if (localCollection) {
-        const items = JSON.parse(localCollection);
-        const itemIndex = items.findIndex((item: any) => item.id === documentId);
-        
-        if (itemIndex !== -1) {
-          // Update the item
-          items[itemIndex] = {
-            ...items[itemIndex],
-            ...data,
-            updatedAt: new Date().toISOString()
-          };
-          
-          // Save back to localStorage
-          localStorage.setItem(localCollectionKey, JSON.stringify(items));
-          return items[itemIndex];
-        }
-      }
-      
-      throw new Error(`Document not found in localStorage: ${collectionName}/${documentId}`);
+      throw new Error(`Document not found in localStorage: ${documentId}`);
     }
     
     // Add timestamp
@@ -371,11 +405,12 @@ export const updateDocument = async (collectionName: string, documentId: string,
     const docRef = doc(db, collectionName, documentId);
     await updateDoc(docRef, updateData);
     
-    // Get the updated document
-    const updatedDoc = await getDoc(docRef);
+    console.log(`Updated document in Firestore: ${collectionName}/${documentId}`);
+    console.log('Updated data:', updateData);
+    
     return {
-      id: updatedDoc.id,
-      ...updatedDoc.data()
+      id: documentId,
+      ...updateData
     };
   } catch (error) {
     console.error(`Error updating document ${collectionName}/${documentId}:`, error);
@@ -384,20 +419,39 @@ export const updateDocument = async (collectionName: string, documentId: string,
     if (collectionName === 'projects') {
       const localProjects = localStorage.getItem('localProjects');
       if (localProjects) {
-        const projects = JSON.parse(localProjects);
-        const projectIndex = projects.findIndex((p: any) => p.id === documentId);
-        
-        if (projectIndex !== -1) {
-          // Update the project
-          projects[projectIndex] = {
-            ...projects[projectIndex],
-            ...data,
-            updatedAt: new Date().toISOString()
-          };
+        try {
+          let projects = JSON.parse(localProjects);
           
-          // Save back to localStorage
-          localStorage.setItem('localProjects', JSON.stringify(projects));
-          return projects[projectIndex];
+          // Find and update the project
+          const index = projects.findIndex((p: any) => p.id === documentId);
+          if (index !== -1) {
+            // Normalize featured flag
+            if ('featured' in data) {
+              const originalFeatured = data.featured;
+              data.featured = data.featured === true || 
+                             data.featured === 'true' || 
+                             data.featured === 'True' || 
+                             data.featured === '1' ||
+                             data.featured === 'yes' ||
+                             data.featured === 'Yes';
+              console.log(`Normalized featured flag in localStorage fallback: ${originalFeatured} -> ${data.featured}`);
+            }
+            
+            // Update the document
+            projects[index] = {
+              ...projects[index],
+              ...data,
+              updatedAt: new Date().toISOString()
+            };
+            
+            // Save back to localStorage
+            localStorage.setItem('localProjects', JSON.stringify(projects));
+            
+            console.log(`Updated project in localStorage as fallback: ${documentId}`);
+            return projects[index];
+          }
+        } catch (localError) {
+          console.error('Error updating in localStorage:', localError);
         }
       }
     }

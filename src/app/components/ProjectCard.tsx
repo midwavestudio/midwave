@@ -47,7 +47,7 @@ const ProjectCard = ({ project, onClick }: ProjectCardProps) => {
 
   return (
     <motion.div
-      className="group cursor-pointer overflow-hidden rounded-lg bg-background-lighter h-[400px] relative"
+      className="group cursor-pointer overflow-hidden rounded-lg bg-background-lighter h-[350px] sm:h-[400px] relative"
       whileHover={{ y: -5 }}
       transition={{ duration: 0.3 }}
       onClick={onClick}
@@ -76,7 +76,7 @@ const ProjectCard = ({ project, onClick }: ProjectCardProps) => {
                 src={project.thumbnailUrl}
                 alt={project.title}
                 fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                 className="object-cover transition-opacity duration-500"
                 style={{ opacity: isLoading ? 0 : 1 }}
                 onLoadingComplete={() => setIsLoading(false)}
@@ -87,7 +87,7 @@ const ProjectCard = ({ project, onClick }: ProjectCardProps) => {
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-[#0f0f13] to-[#1a1a1a]">
             <div className="absolute inset-0 flex items-center justify-center opacity-10">
-              <svg className="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg className="w-16 sm:w-24 h-16 sm:h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
@@ -99,17 +99,17 @@ const ProjectCard = ({ project, onClick }: ProjectCardProps) => {
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent z-10 opacity-80 group-hover:opacity-90 transition-opacity duration-300" />
 
       {/* Content */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
-        <h3 className="text-xl font-bold text-white mb-2 group-hover:text-[#b85a00] transition-colors">
+      <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 z-20">
+        <h3 className="text-lg sm:text-xl font-bold text-white mb-1 sm:mb-2 group-hover:text-[#b85a00] transition-colors line-clamp-2">
           {project.title}
         </h3>
-        <p className="text-gray-300 text-sm mb-4 line-clamp-2">
+        <p className="text-gray-300 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">
           {project.description}
         </p>
         <div className="flex items-center justify-between">
-          <span className="inline-flex items-center text-[#b85a00] text-sm font-medium group-hover:translate-x-2 transition-transform">
+          <span className="inline-flex items-center text-[#b85a00] text-xs sm:text-sm font-medium group-hover:translate-x-2 transition-transform">
             View Project
-            <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
           </span>
@@ -120,10 +120,10 @@ const ProjectCard = ({ project, onClick }: ProjectCardProps) => {
               target="_blank" 
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center bg-[#b85a00] hover:bg-[#a04d00] text-white text-sm font-medium px-3 py-1 rounded-md transition-colors"
+              className="inline-flex items-center bg-[#b85a00] hover:bg-[#a04d00] text-white text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 sm:py-1.5 rounded-md transition-colors"
             >
               Visit Site
-              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
             </a>

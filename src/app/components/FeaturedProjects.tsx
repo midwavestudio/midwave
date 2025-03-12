@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Project, getFeaturedProjects } from '@/lib/firebase/projectUtils';
+import { Project, getFeaturedProjects, createTestFeaturedProject } from '@/lib/firebase/projectUtils';
 import ProjectCard from './ProjectCard';
 import ProjectModal from './ProjectModal';
 
@@ -13,62 +13,90 @@ const FeaturedProjects = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
+  const [debugMode, setDebugMode] = useState(false);
+  const [localStorageContent, setLocalStorageContent] = useState<string | null>(null);
+
+  const fetchProjects = async () => {
+    try {
+      setIsLoading(true);
+      setErrorMessage(null);
+      
+      console.log('Fetching featured projects...');
+      
+      // Check localStorage content for debugging
+      if (typeof window !== 'undefined') {
+        const localProjects = localStorage.getItem('localProjects');
+        setLocalStorageContent(localProjects);
+        
+        if (localProjects) {
+          try {
+            const parsedProjects = JSON.parse(localProjects);
+            console.log('Local projects found:', parsedProjects.length);
+            console.log('Projects with featured flag:', 
+              parsedProjects.filter((p: Project) => p.featured === true || p.featured === 'true').length
+            );
+          } catch (e) {
+            console.error('Error parsing localStorage:', e);
+          }
+        } else {
+          console.log('No projects found in localStorage');
+        }
+      }
+      
+      // Get featured projects, including test projects in development
+      const includeTestProjects = process.env.NODE_ENV === 'development';
+      console.log('Including test projects:', includeTestProjects);
+      
+      const featuredProjects = await getFeaturedProjects(includeTestProjects);
+      console.log('Featured projects fetched:', featuredProjects.length);
+      
+      if (featuredProjects.length > 0) {
+        setProjects(featuredProjects);
+      } else {
+        setProjects([]);
+        setErrorMessage('No featured projects found. Please mark some projects as featured in the admin dashboard.');
+      }
+    } catch (error) {
+      console.error('Error in fetchProjects:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Unknown error');
+      setProjects([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        setIsLoading(true);
-        console.log('Fetching featured projects...');
-        
-        // Get featured projects
-        const featuredProjects = await getFeaturedProjects();
-        console.log('Featured projects fetched:', featuredProjects.length);
-        
-        if (featuredProjects.length > 0) {
-          console.log('Setting featured projects from fetch');
-          setProjects(featuredProjects);
-        } else {
-          console.log('No featured projects found');
-          setProjects([]);
-          setErrorMessage('No featured projects found. Please mark some projects as featured in the admin dashboard.');
-        }
-      } catch (error) {
-        console.error('Error in fetchProjects:', error);
-        setErrorMessage(error instanceof Error ? error.message : 'Unknown error');
-        setProjects([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchProjects();
-  }, [retryCount]);
+  }, []);
 
   // Open project modal
   const handleProjectClick = (project: Project) => {
-    console.log('Project clicked:', project.title);
     setSelectedProject(project);
     setIsModalOpen(true);
-    console.log('Modal should be open now. isModalOpen:', true);
   };
 
-  // Debug modal state changes
-  useEffect(() => {
-    console.log('Modal state changed. isModalOpen:', isModalOpen);
-    console.log('Selected project:', selectedProject?.title);
-  }, [isModalOpen, selectedProject]);
-
-  // Debug projects state changes
-  useEffect(() => {
-    console.log('Projects state changed. Count:', projects.length);
-    if (projects.length > 0) {
-      console.log('First project:', projects[0].title);
+  // Create a test featured project
+  const handleCreateTestProject = async () => {
+    try {
+      createTestFeaturedProject();
+      
+      // Wait a moment for localStorage to update
+      setTimeout(() => {
+        fetchProjects();
+      }, 500);
+    } catch (error) {
+      console.error('Error creating test project:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Error creating test project');
     }
-  }, [projects]);
+  };
+
+  // Toggle debug mode
+  const toggleDebugMode = () => {
+    setDebugMode(!debugMode);
+  };
 
   return (
-    <section className="py-24 bg-[#09090b]">
+    <section className="py-24 relative z-10">
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -82,29 +110,65 @@ const FeaturedProjects = () => {
             Explore our most impactful work, showcasing our expertise in design and development
             across various industries.
           </p>
+          
+          {/* Debug button - always visible in development */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-4">
+              <button 
+                onClick={toggleDebugMode}
+                className="text-xs text-gray-500 underline"
+              >
+                {debugMode ? 'Hide Debug Tools' : 'Show Debug Tools'}
+              </button>
+              
+              {debugMode && (
+                <div className="mt-2 flex flex-col items-center">
+                  <div className="flex justify-center gap-2 mb-2">
+                    <button 
+                      onClick={handleCreateTestProject}
+                      className="px-3 py-1 bg-blue-900/30 text-blue-300 rounded text-xs"
+                    >
+                      Create Test Featured Project
+                    </button>
+                    <button 
+                      onClick={fetchProjects}
+                      className="px-3 py-1 bg-green-900/30 text-green-300 rounded text-xs"
+                    >
+                      Refresh Projects
+                    </button>
+                  </div>
+                  
+                  {localStorageContent && (
+                    <div className="mt-2 text-left max-w-full overflow-x-auto">
+                      <p className="text-xs text-gray-500 mb-1">LocalStorage Content:</p>
+                      <div className="bg-gray-900/50 p-2 rounded text-xs text-gray-400 max-h-32 overflow-y-auto">
+                        <pre>{localStorageContent}</pre>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </motion.div>
 
         {isLoading ? (
           <div className="flex justify-center items-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#b85a00]"></div>
           </div>
-        ) : (
+        ) :
           <>
             {errorMessage && (
               <div className="bg-red-900/20 text-red-300 p-4 rounded-lg mb-6">
                 <p>Error loading projects: {errorMessage}</p>
-                <button 
-                  onClick={() => setRetryCount(prev => prev + 1)}
-                  className="mt-2 px-3 py-1 bg-red-800/30 hover:bg-red-800/50 rounded text-sm"
-                >
-                  Retry
-                </button>
-                <Link 
-                  href="/admin/projects"
-                  className="mt-2 ml-2 px-3 py-1 bg-[#b85a00]/30 hover:bg-[#b85a00]/50 rounded text-sm"
-                >
-                  Manage Projects
-                </Link>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <Link 
+                    href="/admin/projects"
+                    className="px-3 py-1 bg-[#b85a00]/30 hover:bg-[#b85a00]/50 rounded text-sm"
+                  >
+                    Manage Projects
+                  </Link>
+                </div>
               </div>
             )}
             
@@ -128,12 +192,20 @@ const FeaturedProjects = () => {
             ) : (
               <div className="text-center py-10">
                 <p className="text-gray-400">No featured projects found.</p>
-                <Link 
-                  href="/admin/projects"
-                  className="mt-4 px-4 py-2 bg-[#b85a00] text-white rounded-lg hover:bg-[#a04d00] transition-colors inline-block"
-                >
-                  Add Projects
-                </Link>
+                <div className="mt-4 flex justify-center gap-4">
+                  <Link 
+                    href="/admin/projects"
+                    className="px-4 py-2 bg-[#b85a00] text-white rounded-lg hover:bg-[#a04d00] transition-colors inline-block"
+                  >
+                    Add Projects
+                  </Link>
+                  <button 
+                    onClick={handleCreateTestProject}
+                    className="px-4 py-2 bg-blue-900/30 text-blue-300 rounded-lg hover:bg-blue-900/50 transition-colors"
+                  >
+                    Create Test Project
+                  </button>
+                </div>
               </div>
             )}
 
@@ -155,17 +227,14 @@ const FeaturedProjects = () => {
               </Link>
             </motion.div>
           </>
-        )}
+        }
       </div>
 
       {/* Project Modal */}
       <ProjectModal
         project={selectedProject}
         isOpen={isModalOpen}
-        onClose={() => {
-          console.log('Modal closing...');
-          setIsModalOpen(false);
-        }}
+        onClose={() => setIsModalOpen(false)}
       />
     </section>
   );

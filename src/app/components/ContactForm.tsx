@@ -55,38 +55,38 @@ const ContactForm = () => {
   };
   
   return (
-    <div className="bg-[#0f0f13] rounded-lg p-8 border border-[#b85a00]/20">
+    <div className="bg-[#0f0f13]/80 backdrop-blur-sm rounded-lg p-5 sm:p-8 border border-[#b85a00]/20">
       {isSubmitted ? (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center py-12"
+          className="text-center py-8 sm:py-12"
         >
-          <div className="bg-[#b85a00]/20 p-4 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-[#b85a00]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <div className="bg-[#b85a00]/20 p-4 rounded-full w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 sm:w-10 sm:h-10 text-[#b85a00]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h3 className="text-2xl font-bold text-white mb-4">Message Sent!</h3>
-          <p className="text-gray-300 mb-8">
+          <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">Message Sent!</h3>
+          <p className="text-gray-300 mb-6 sm:mb-8">
             Thank you for reaching out. We'll get back to you within 24-48 hours.
           </p>
           <button
             onClick={() => setIsSubmitted(false)}
-            className="btn btn-secondary"
+            className="px-6 py-3 bg-transparent border border-[#b85a00]/50 text-white rounded-lg hover:bg-[#b85a00]/10 transition-colors font-medium"
           >
             Send Another Message
           </button>
         </motion.div>
       ) : (
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6">
             <div>
-              <label htmlFor="name" className="block text-gray-300 mb-2">Name *</label>
+              <label htmlFor="name" className="block text-gray-300 mb-2 text-sm sm:text-base">Name *</label>
               <input
                 id="name"
                 type="text"
-                className={`w-full bg-[#18181b] border ${errors.name ? 'border-red-500' : 'border-[#b85a00]/20'} rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]`}
+                className={`w-full bg-[#18181b] border ${errors.name ? 'border-red-500' : 'border-[#b85a00]/20'} rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00] text-base`}
                 placeholder="Your name"
                 {...register('name', { required: 'Name is required' })}
               />
@@ -96,11 +96,11 @@ const ContactForm = () => {
             </div>
             
             <div>
-              <label htmlFor="email" className="block text-gray-300 mb-2">Email *</label>
+              <label htmlFor="email" className="block text-gray-300 mb-2 text-sm sm:text-base">Email *</label>
               <input
                 id="email"
                 type="email"
-                className={`w-full bg-[#18181b] border ${errors.email ? 'border-red-500' : 'border-[#b85a00]/20'} rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]`}
+                className={`w-full bg-[#18181b] border ${errors.email ? 'border-red-500' : 'border-[#b85a00]/20'} rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00] text-base`}
                 placeholder="Your email"
                 {...register('email', { 
                   required: 'Email is required',
@@ -116,22 +116,22 @@ const ContactForm = () => {
             </div>
             
             <div>
-              <label htmlFor="company" className="block text-gray-300 mb-2">Company</label>
+              <label htmlFor="company" className="block text-gray-300 mb-2 text-sm sm:text-base">Company</label>
               <input
                 id="company"
                 type="text"
-                className="w-full bg-[#18181b] border border-[#b85a00]/20 rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]"
+                className="w-full bg-[#18181b] border border-[#b85a00]/20 rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00] text-base"
                 placeholder="Your company"
                 {...register('company')}
               />
             </div>
             
             <div>
-              <label htmlFor="phone" className="block text-gray-300 mb-2">Phone</label>
+              <label htmlFor="phone" className="block text-gray-300 mb-2 text-sm sm:text-base">Phone</label>
               <input
                 id="phone"
                 type="tel"
-                className="w-full bg-[#18181b] border border-[#b85a00]/20 rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]"
+                className="w-full bg-[#18181b] border border-[#b85a00]/20 rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00] text-base"
                 placeholder="Your phone number"
                 {...register('phone')}
               />
@@ -139,10 +139,10 @@ const ContactForm = () => {
           </div>
           
           <div className="mb-6">
-            <label className="block text-gray-300 mb-2">Services of Interest</label>
+            <label className="block text-gray-300 mb-2 text-sm sm:text-base">Services of Interest</label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {services.map(service => (
-                <div key={service.id} className="flex items-center">
+                <div key={service.id} className="flex items-center py-2">
                   <input
                     id={`service-${service.id}`}
                     type="checkbox"
@@ -150,7 +150,7 @@ const ContactForm = () => {
                     className="w-5 h-5 bg-[#18181b] border-[#b85a00]/20 rounded text-[#b85a00] focus:ring-[#b85a00]"
                     {...register('services')}
                   />
-                  <label htmlFor={`service-${service.id}`} className="ml-2 text-gray-300">
+                  <label htmlFor={`service-${service.id}`} className="ml-3 text-gray-300 text-sm sm:text-base">
                     {service.label}
                   </label>
                 </div>
@@ -159,11 +159,11 @@ const ContactForm = () => {
           </div>
           
           <div className="mb-6">
-            <label htmlFor="message" className="block text-gray-300 mb-2">Message *</label>
+            <label htmlFor="message" className="block text-gray-300 mb-2 text-sm sm:text-base">Message *</label>
             <textarea
               id="message"
               rows={5}
-              className={`w-full bg-[#18181b] border ${errors.message ? 'border-red-500' : 'border-[#b85a00]/20'} rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]`}
+              className={`w-full bg-[#18181b] border ${errors.message ? 'border-red-500' : 'border-[#b85a00]/20'} rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00] text-base`}
               placeholder="Tell us about your project"
               {...register('message', { required: 'Message is required' })}
             ></textarea>
@@ -173,7 +173,7 @@ const ContactForm = () => {
           </div>
           
           {error && (
-            <div className="mb-6 p-4 bg-red-500/20 border border-red-500 rounded-md text-red-400">
+            <div className="mb-6 p-4 bg-red-500/20 border border-red-500 rounded-md text-red-400 text-sm sm:text-base">
               {error}
             </div>
           )}
@@ -181,13 +181,13 @@ const ContactForm = () => {
           <div className="text-center">
             <motion.button
               type="submit"
-              className="btn btn-primary px-8 py-3"
+              className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-[#b85a00] text-white rounded-lg hover:bg-[#a04d00] transition-colors font-medium"
               disabled={isSubmitting}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               {isSubmitting ? (
-                <span className="flex items-center">
+                <span className="flex items-center justify-center">
                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

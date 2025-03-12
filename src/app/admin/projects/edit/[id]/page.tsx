@@ -2,7 +2,8 @@
 
 import { Metadata } from 'next';
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
+import React from 'react';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import ImageUrlHelper from '@/app/components/ImageUrlHelper';
@@ -10,6 +11,10 @@ import FirebaseStatus from '@/app/components/FirebaseStatus';
 import { getDocument, updateDocument } from '@/lib/firebase/firebaseUtils';
 import { Project } from '@/lib/firebase/projectUtils';
 import { compressImage } from '@/lib/utils/imageUtils';
+import { useAuth } from '@/lib/firebase/auth';
+import { FiArrowLeft, FiSave } from 'react-icons/fi';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 // Define the props type to match Next.js's expectations
 type EditProjectProps = {
@@ -20,8 +25,10 @@ type EditProjectProps = {
 };
 
 export default function EditProject({ params }: EditProjectProps) {
+  const { user, loading } = useAuth();
   const router = useRouter();
-  const { id } = params;
+  const routeParams = useParams();
+  const id = routeParams.id as string;
   
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,45 +60,56 @@ export default function EditProject({ params }: EditProjectProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const multipleFileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch project data
+  useEffect(() => {
+    // Redirect if not logged in
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
   useEffect(() => {
     const fetchProject = async () => {
-      try {
-        setIsLoading(true);
-        const projectData = await getDocument('projects', id) as Project;
-        
-        if (projectData) {
-          setTitle(projectData.title || '');
-          setSlug(projectData.slug || '');
-          setCategory(projectData.category || '');
-          setDescription(projectData.description || '');
-          setFullDescription(projectData.fullDescription || '');
-          setClient(projectData.client || '');
-          setDate(projectData.date || '');
-          setServices(projectData.services?.join(', ') || '');
-          setTechnologies(projectData.technologies?.join(', ') || '');
-          setThumbnailUrl(projectData.thumbnailUrl || '');
-          setImageUrls(projectData.imageUrls?.join(', ') || '');
-          setFeatured(projectData.featured || false);
-          setOrder(projectData.order || Date.now());
-          setUrl(projectData.url || '');
-        } else {
-          setMessage('Project not found');
+      if (user) {
+        try {
+          setIsLoading(true);
+          const allProjects = await getProjects();
+          const project = allProjects.find(p => p.id === params.id);
+          
+          if (project) {
+            setTitle(project.title || '');
+            setSlug(project.slug || '');
+            setCategory(project.category || '');
+            setDescription(project.description || '');
+            setFullDescription(project.fullDescription || '');
+            setClient(project.client || '');
+            setDate(project.date || '');
+            setServices(Array.isArray(project.services) ? project.services.join(', ') : '');
+            setTechnologies(Array.isArray(project.technologies) ? project.technologies.join(', ') : '');
+            setThumbnailUrl(project.thumbnailUrl || '');
+            setImageUrls(Array.isArray(project.imageUrls) ? project.imageUrls.join(', ') : '');
+            setFeatured(project.featured || false);
+            setUrl(project.url || '');
+          } else {
+            setMessage('Project not found');
+            setMessageType('error');
+          }
+        } catch (error) {
+          console.error('Error fetching project:', error);
+          setMessage(error instanceof Error ? error.message : 'Unknown error');
           setMessageType('error');
+        } finally {
+          setIsLoading(false);
         }
-      } catch (error) {
-        console.error('Error fetching project:', error);
-        setMessage(`Failed to load project: ${error instanceof Error ? error.message : String(error)}`);
-        setMessageType('error');
-      } finally {
-        setIsLoading(false);
       }
     };
 
-    if (id) {
-      fetchProject();
-    }
-  }, [id]);
+    fetchProject();
+  }, [user, params.id]);
+
+  // Debug featured state changes
+  useEffect(() => {
+    console.log('Featured state changed:', featured);
+  }, [featured]);
 
   // Handle thumbnail image upload
   const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,10 +175,10 @@ export default function EditProject({ params }: EditProjectProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setIsSubmitting(true);
+    setMessage('');
+
     try {
-      setIsSubmitting(true);
-      
       // Convert uploaded thumbnail to base64 if it exists
       let finalThumbnailUrl = thumbnailUrl;
       if (uploadedThumbnail) {
@@ -179,7 +197,7 @@ export default function EditProject({ params }: EditProjectProps) {
       finalImageUrls = [...finalImageUrls, ...imagePreviewUrls];
       
       // Prepare project data
-      const projectData: Partial<Project> = {
+      const projectData: Omit<Project, 'id'> = {
         title,
         slug,
         category,
@@ -193,8 +211,11 @@ export default function EditProject({ params }: EditProjectProps) {
         imageUrls: finalImageUrls,
         url,
         featured,
-        order
+        order: Date.now() // Update order to current timestamp
       };
+      
+      console.log('Updating project with featured status:', featured);
+      console.log('Project data being saved:', JSON.stringify(projectData, null, 2));
       
       // Update project in Firestore
       await updateDocument('projects', id, projectData);
@@ -209,7 +230,7 @@ export default function EditProject({ params }: EditProjectProps) {
       
     } catch (error) {
       console.error('Error updating project:', error);
-      setMessage(`Failed to update project: ${error instanceof Error ? error.message : String(error)}`);
+      setMessage(error instanceof Error ? error.message : 'Unknown error occurred');
       setMessageType('error');
     } finally {
       setIsSubmitting(false);
@@ -236,10 +257,139 @@ export default function EditProject({ params }: EditProjectProps) {
     setShowImageHelper(true);
   };
 
+  if (loading || isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <BackgroundDesign />
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#b85a00]"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#09090b]">
+    <div className="min-h-screen">
+      <BackgroundDesign />
       <Header />
       
+      <main className="pt-24 md:pt-32 pb-16 relative z-10">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-4 md:p-6 mb-6"
+          >
+            <div className="flex justify-between items-center">
+              <h1 className="text-2xl md:text-3xl font-bold text-white">Edit Project</h1>
+              <Link 
+                href="/admin/projects" 
+                className="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 text-white px-3 py-1.5 rounded-lg transition-colors text-sm"
+              >
+                <FiArrowLeft size={16} />
+                <span>Back to Projects</span>
+              </Link>
+            </div>
+            <p className="text-gray-400 text-sm md:text-base mt-2">
+              Update project details
+            </p>
+          </motion.div>
+          
+          {message && (
+            <div className={`p-4 mb-6 rounded-lg ${
+              messageType === 'success' ? 'bg-green-900/20 text-green-300' : 'bg-red-900/20 text-red-300'
+            }`}>
+              {message}
+            </div>
+          )}
+          
+          <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-4 md:p-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-1">
+                    Project Title <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    required
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00] focus:border-transparent"
+                    placeholder="Enter project title"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-1">
+                    Description <span className="text-red-400">*</span>
+                  </label>
+                  <textarea
+                    id="description"
+                    name="description"
+                    required
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={4}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00] focus:border-transparent"
+                    placeholder="Describe your project"
+                  ></textarea>
+                </div>
+                
+                <div>
+                  <label htmlFor="category" className="block text-sm font-medium text-gray-300 mb-1">
+                    Category
+                  </label>
+                  <select
+                    id="category"
+                    name="category"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00] focus:border-transparent"
+                  >
+                    <option value="">Select a category</option>
+                    <option value="Web Development">Web Development</option>
+                    <option value="Mobile App">Mobile App</option>
+                    <option value="UI/UX Design">UI/UX Design</option>
+                    <option value="Branding">Branding</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label htmlFor="thumbnailUrl" className="block text-sm font-medium text-gray-300 mb-1">
+                    Thumbnail URL
+                  </label>
+                  <input
+                    type="url"
+                    id="thumbnailUrl"
+                    name="thumbnailUrl"
+                    value={thumbnailUrl}
+                    onChange={(e) => setThumbnailUrl(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00] focus:border-transparent"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                  <p className="mt-1 text-xs text-gray-400">
+                    Enter a URL for the project thumbnail image
+                  </p>
+                </div>
+                
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="featured"
+                    name="featured"
+                    checked={featured}
+                    onChange={(e) => {
+                      console.log('Checkbox changed to:', e.target.checked);
+                      setFeatured(e.target.checked);
+                    }}
+                    className="h-4 w-4 text-[#b85a00] focus:ring-[#b85a00] border-gray-700 rounded"
+                  />
+                  <label htmlFor="featured" className="ml-2 block text-sm text-gray-300">
+                    Feature this project on the homepage
+                  </label>
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-3xl mx-auto">
@@ -540,7 +690,10 @@ export default function EditProject({ params }: EditProjectProps) {
                       <input
                         type="checkbox"
                         checked={featured}
-                        onChange={(e) => setFeatured(e.target.checked)}
+                        onChange={(e) => {
+                          console.log('Checkbox changed to:', e.target.checked);
+                          setFeatured(e.target.checked);
+                        }}
                         className="rounded text-[#b85a00] focus:ring-[#b85a00]"
                       />
                       <span>Featured Project</span>

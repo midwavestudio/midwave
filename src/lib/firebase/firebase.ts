@@ -25,11 +25,22 @@ let storage: FirebaseStorage = {} as FirebaseStorage;
 // Initialize Firebase lazily to avoid SSR issues
 const initializeFirebase = async () => {
   try {
+    console.log('Initializing Firebase...');
+    
     // Dynamically import Firebase modules
     const { initializeApp, getApps } = await import('firebase/app');
     const { getAuth } = await import('firebase/auth');
     const { getFirestore } = await import('firebase/firestore');
     const { getStorage } = await import('firebase/storage');
+
+    console.log('Firebase modules imported successfully');
+    console.log('Firebase config:', JSON.stringify({
+      apiKey: firebaseConfig.apiKey,
+      authDomain: firebaseConfig.authDomain,
+      projectId: firebaseConfig.projectId,
+      storageBucket: firebaseConfig.storageBucket,
+      // Omit sensitive values
+    }));
 
     // Check if Firebase is already initialized
     if (getApps().length === 0) {
@@ -39,6 +50,7 @@ const initializeFirebase = async () => {
     } else {
       // Use existing Firebase app
       firebaseApp = getApps()[0];
+      console.log("Using existing Firebase app");
     }
     
     // Initialize Firebase services

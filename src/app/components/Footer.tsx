@@ -21,22 +21,22 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-[#09090b] text-gray-300 border-t border-[#b85a00]/20 py-5">
+    <footer className="bg-[#09090b] text-gray-300 border-t border-[#b85a00]/20 py-4">
       <div className="container mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-1 md:mb-0">
-            <Link href="/" className="block h-20">
+          <div className="mb-0 md:mb-0 flex-1">
+            <Link href="/" className="block">
               <Image 
                 src="/images/midwave-logo.png" 
                 alt="Midwave Studio Logo" 
-                width={2400} 
-                height={600} 
-                className="h-20 w-auto"
+                width={4800} 
+                height={1200} 
+                className="h-auto w-[300px] object-contain"
               />
             </Link>
           </div>
           
-          <div className="flex space-x-6 mb-2 md:mb-0 text-sm">
+          <div className="flex space-x-6 mb-0 md:mb-0 text-sm">
             <FooterLink href="/services">Services</FooterLink>
             <FooterLink href="/projects">Work</FooterLink>
             <FooterLink href="/about">About</FooterLink>
@@ -63,7 +63,7 @@ const Footer = () => {
           </div>
         </div>
         
-        <div className="border-t border-[#b85a00]/20 mt-2 pt-2 text-center">
+        <div className="border-t border-[#b85a00]/20 mt-1 pt-1 text-center">
           <p className="text-xs text-gray-500">
             &copy; {currentYear} Midwave Studio. All rights reserved.
           </p>

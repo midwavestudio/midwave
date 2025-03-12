@@ -1,17 +1,29 @@
+'use client';
+
 import Header from './components/Header';
-import Hero from './components/Hero';
-import Services from './components/Services';
-import FeaturedProjects from './components/FeaturedProjects';
 import Footer from './components/Footer';
+import Hero from './components/Hero';
+import FeaturedProjects from './components/FeaturedProjects';
+import Services from './components/Services';
+import Testimonials from './components/Testimonials';
+import CallToAction from './components/CallToAction';
+import BackgroundDesign from './components/BackgroundDesign';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#09090b]">
+    <div className="min-h-screen">
+      <BackgroundDesign />
       <Header />
-      <Hero />
-      <Services />
-      <FeaturedProjects />
+      
+      <main>
+        <Hero />
+        <FeaturedProjects />
+        <Services />
+        <Testimonials />
+        <CallToAction />
+      </main>
+      
       <Footer />
-    </main>
+    </div>
   );
 }
