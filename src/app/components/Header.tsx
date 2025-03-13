@@ -82,7 +82,6 @@ const Header = () => {
             <NavLink href="/about">About</NavLink>
             <NavLink href="/projects">Projects</NavLink>
             <NavLink href="/contact">Contact</NavLink>
-            <NavLink href="/admin/projects">Admin</NavLink>
           </nav>
 
           {/* Mobile Menu Button - positioned on the right */}
@@ -122,7 +121,6 @@ const Header = () => {
               <MobileNavLink href="/about" onClick={toggleMenu}>About</MobileNavLink>
               <MobileNavLink href="/projects" onClick={toggleMenu}>Projects</MobileNavLink>
               <MobileNavLink href="/contact" onClick={toggleMenu}>Contact</MobileNavLink>
-              <MobileNavLink href="/admin/projects" onClick={toggleMenu}>Admin</MobileNavLink>
             </div>
           </motion.div>
         )}

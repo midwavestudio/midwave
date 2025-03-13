@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/lib/firebase/auth';
 import { getProjects, Project, createTestFeaturedProject } from '@/lib/firebase/projectUtils';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
@@ -12,43 +10,33 @@ import { motion } from 'framer-motion';
 import { FiEdit, FiTrash2, FiPlus, FiStar } from 'react-icons/fi';
 
 export default function AdminProjectsPage() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    // Redirect if not logged in
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
-
-  useEffect(() => {
     const fetchProjects = async () => {
-      if (user) {
-        try {
-          setIsLoading(true);
-          const allProjects = await getProjects();
-          setProjects(allProjects);
-        } catch (error) {
-          console.error('Error fetching projects:', error);
-          setErrorMessage(error instanceof Error ? error.message : 'Unknown error');
-        } finally {
-          setIsLoading(false);
-        }
+      try {
+        setIsLoading(true);
+        const allProjects = await getProjects();
+        setProjects(allProjects);
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+        setErrorMessage(error instanceof Error ? error.message : 'Unknown error');
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchProjects();
-  }, [user]);
+  }, []);
 
   const handleCreateTestProject = () => {
     try {
       createTestFeaturedProject();
+      // Refresh the page to show the new project
       setTimeout(() => {
-        router.refresh();
+        window.location.reload();
       }, 500);
     } catch (error) {
       console.error('Error creating test project:', error);
@@ -61,6 +49,9 @@ export default function AdminProjectsPage() {
       // In a real application, you would update the project in Firestore
       // For now, we'll just update it in localStorage
       
+      console.log(`Toggling featured status for project "${project.title}" (ID: ${project.id})`);
+      console.log(`Current featured status: ${project.featured} (${typeof project.featured})`);
+      
       if (typeof window !== 'undefined') {
         const localProjects = localStorage.getItem('localProjects');
         if (localProjects) {
@@ -70,13 +61,20 @@ export default function AdminProjectsPage() {
             // Find and update the project
             const updatedProjects = parsedProjects.map(p => {
               if (p.id === project.id) {
-                // Ensure featured is set as a boolean
-                const newFeatured = !p.featured;
-                console.log(`Toggling project "${p.title}" featured status from ${p.featured} to ${newFeatured}`);
+                // Always ensure featured is a boolean value
+                const currentFeatured = Boolean(
+                  p.featured === true || 
+                  p.featured === 'true' || 
+                  p.featured === 1 || 
+                  p.featured === '1'
+                );
+                
+                const newFeatured = !currentFeatured;
+                console.log(`Toggling project "${p.title}" featured status from ${currentFeatured} to ${newFeatured}`);
                 
                 return {
                   ...p,
-                  featured: newFeatured
+                  featured: newFeatured // Explicitly set as boolean
                 };
               }
               return p;
@@ -93,18 +91,30 @@ export default function AdminProjectsPage() {
                 const updatedProject = parsedVerify.find(p => p.id === project.id);
                 if (updatedProject) {
                   console.log(`Project "${updatedProject.title}" featured status is now ${updatedProject.featured} (type: ${typeof updatedProject.featured})`);
+                } else {
+                  console.warn(`Could not find project with ID ${project.id} after update`);
                 }
               } catch (verifyError) {
                 console.error('Error verifying saved projects:', verifyError);
               }
+            } else {
+              console.warn('Could not verify projects after save - localStorage may be empty');
             }
             
-            // Update state
+            // Update state to reflect the changes
             setProjects(prev => prev.map(p => {
               if (p.id === project.id) {
+                // Also ensure the state update uses a boolean
+                const currentFeatured = Boolean(
+                  p.featured === true || 
+                  p.featured === 'true' || 
+                  p.featured === 1 || 
+                  p.featured === '1'
+                );
+                
                 return {
                   ...p,
-                  featured: !p.featured
+                  featured: !currentFeatured // Explicitly set as boolean
                 };
               }
               return p;
@@ -127,7 +137,7 @@ export default function AdminProjectsPage() {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <BackgroundDesign />

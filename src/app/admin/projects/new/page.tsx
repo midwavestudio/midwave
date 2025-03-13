@@ -1,17 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/firebase/auth';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
 import BackgroundDesign from '../../../components/BackgroundDesign';
 import { motion } from 'framer-motion';
 import { FiArrowLeft, FiSave } from 'react-icons/fi';
 import Link from 'next/link';
+import { Project } from '@/lib/firebase/projectUtils';
 
 export default function NewProjectPage() {
-  const { user, loading } = useAuth();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -23,21 +22,14 @@ export default function NewProjectPage() {
     featured: false,
   });
 
-  useEffect(() => {
-    // Redirect if not logged in
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
+    const { name, value, type } = e.target as HTMLInputElement;
     
     if (type === 'checkbox') {
-      const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({ ...prev, [name]: checked }));
+      const target = e.target as HTMLInputElement;
+      setFormData({ ...formData, [name]: target.checked });
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData({ ...formData, [name]: value });
     }
   };
 
@@ -47,83 +39,57 @@ export default function NewProjectPage() {
     setErrorMessage(null);
 
     try {
-      // Create a new project in localStorage for now
-      // In a real app, you would save to Firestore
-      const newProject = {
-        ...formData,
-        id: `local-${Date.now()}`,
+      // Generate a unique ID
+      const id = `project-${Date.now()}`;
+      
+      // Create new project with featured explicitly set as a boolean
+      const newProject: Project = {
+        id,
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        thumbnail: formData.thumbnailUrl,
+        featured: Boolean(formData.featured), // Ensure it's a boolean
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         slug: formData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
-        // Ensure featured is a boolean
-        featured: Boolean(formData.featured)
       };
-
-      console.log(`Creating new project "${newProject.title}" with featured = ${newProject.featured} (type: ${typeof newProject.featured})`);
-
-      // Save to localStorage with error handling
-      if (typeof window !== 'undefined') {
-        try {
-          // Get existing projects
-          let projects: any[] = [];
-          const localProjects = localStorage.getItem('localProjects');
-          
-          if (localProjects) {
-            try {
-              projects = JSON.parse(localProjects);
-              console.log('Found existing projects:', projects.length);
-            } catch (parseError) {
-              console.error('Error parsing existing projects:', parseError);
-              projects = [];
-            }
-          }
-          
-          // Add new project
-          projects.push(newProject);
-          
-          // Save back to localStorage
-          localStorage.setItem('localProjects', JSON.stringify(projects));
-          
-          // Verify the save
-          const verifyProjects = localStorage.getItem('localProjects');
-          if (verifyProjects) {
-            try {
-              const parsedVerify = JSON.parse(verifyProjects);
-              const savedProject = parsedVerify.find((p: any) => p.id === newProject.id);
-              if (savedProject) {
-                console.log(`Project saved successfully with featured = ${savedProject.featured} (type: ${typeof savedProject.featured})`);
-              }
-            } catch (verifyError) {
-              console.error('Error verifying saved project:', verifyError);
-            }
-          }
-          
-          // Redirect to admin projects page
-          router.push('/admin/projects');
-        } catch (storageError) {
-          console.error('Error accessing localStorage:', storageError);
-          setErrorMessage('Error saving to localStorage. Your browser may have restrictions on localStorage in private/incognito mode.');
-        }
-      } else {
-        console.warn('Window is not defined, cannot access localStorage');
-        setErrorMessage('Cannot access localStorage');
+      
+      console.log(`Creating new project "${newProject.title}" with featured status: ${newProject.featured} (${typeof newProject.featured})`);
+      
+      // Get existing projects if any
+      let projects: Project[] = [];
+      try {
+        const existingProjects = localStorage.getItem('localProjects');
+        projects = existingProjects ? JSON.parse(existingProjects) : [];
+      } catch (parseError) {
+        console.error('Error parsing existing projects:', parseError);
+        projects = [];
       }
-    } catch (error) {
-      console.error('Error creating project:', error);
-      setErrorMessage(error instanceof Error ? error.message : 'Unknown error occurred');
+      
+      // Add new project
+      projects.push(newProject);
+      
+      // Save to localStorage
+      localStorage.setItem('localProjects', JSON.stringify(projects));
+      
+      // Verify the save was successful
+      const savedData = localStorage.getItem('localProjects');
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        const savedProject = parsedData.find((p: Project) => p.id === id);
+        console.log(`Project saved successfully. Featured status: ${savedProject?.featured} (${typeof savedProject?.featured})`);
+      }
+      
+      // Navigate back to projects page
+      router.push('/admin/projects');
+    } catch (e) {
+      console.error('Error saving project:', e);
+      setErrorMessage('Failed to save project. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <BackgroundDesign />
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#b85a00]"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen">

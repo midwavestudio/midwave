@@ -12,7 +12,6 @@ import FirebaseStatus from '@/app/components/FirebaseStatus';
 import { getDocument, updateDocument } from '@/lib/firebase/firebaseUtils';
 import { Project, getProjects } from '@/lib/firebase/projectUtils';
 import { compressImage } from '@/lib/utils/imageUtils';
-import { useAuth } from '@/lib/firebase/auth';
 import { FiArrowLeft, FiSave } from 'react-icons/fi';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -26,7 +25,6 @@ type EditProjectProps = {
 };
 
 export default function EditProject({ params }: EditProjectProps) {
-  const { user, loading } = useAuth();
   const router = useRouter();
   const routeParams = useParams();
   const id = routeParams.id as string;
@@ -62,50 +60,41 @@ export default function EditProject({ params }: EditProjectProps) {
   const multipleFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Redirect if not logged in
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
-
-  useEffect(() => {
     const fetchProject = async () => {
-      if (user) {
-        try {
-          setIsLoading(true);
-          const allProjects = await getProjects();
-          const project = allProjects.find(p => p.id === params.id);
-          
-          if (project) {
-            setTitle(project.title || '');
-            setSlug(project.slug || '');
-            setCategory(project.category || '');
-            setDescription(project.description || '');
-            setFullDescription(project.fullDescription || '');
-            setClient(project.client || '');
-            setDate(project.date || '');
-            setServices(Array.isArray(project.services) ? project.services.join(', ') : '');
-            setTechnologies(Array.isArray(project.technologies) ? project.technologies.join(', ') : '');
-            setThumbnailUrl(project.thumbnailUrl || '');
-            setImageUrls(Array.isArray(project.imageUrls) ? project.imageUrls.join(', ') : '');
-            setFeatured(project.featured || false);
-            setUrl(project.url || '');
-          } else {
-            setMessage('Project not found');
-            setMessageType('error');
-          }
-        } catch (error) {
-          console.error('Error fetching project:', error);
-          setMessage(error instanceof Error ? error.message : 'Unknown error');
+      try {
+        setIsLoading(true);
+        const allProjects = await getProjects();
+        const project = allProjects.find(p => p.id === params.id);
+        
+        if (project) {
+          setTitle(project.title || '');
+          setSlug(project.slug || '');
+          setCategory(project.category || '');
+          setDescription(project.description || '');
+          setFullDescription(project.fullDescription || '');
+          setClient(project.client || '');
+          setDate(project.date || '');
+          setServices(Array.isArray(project.services) ? project.services.join(', ') : '');
+          setTechnologies(Array.isArray(project.technologies) ? project.technologies.join(', ') : '');
+          setThumbnailUrl(project.thumbnailUrl || '');
+          setImageUrls(Array.isArray(project.imageUrls) ? project.imageUrls.join(', ') : '');
+          setFeatured(project.featured || false);
+          setUrl(project.url || '');
+        } else {
+          setMessage('Project not found');
           setMessageType('error');
-        } finally {
-          setIsLoading(false);
         }
+      } catch (error) {
+        console.error('Error fetching project:', error);
+        setMessage(error instanceof Error ? error.message : 'Unknown error');
+        setMessageType('error');
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchProject();
-  }, [user, params.id]);
+  }, [params.id]);
 
   // Debug featured state changes
   useEffect(() => {
@@ -258,7 +247,7 @@ export default function EditProject({ params }: EditProjectProps) {
     setShowImageHelper(true);
   };
 
-  if (loading || isLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <BackgroundDesign />

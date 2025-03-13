@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/firebase/auth';
 import { getProjects, Project } from '@/lib/firebase/projectUtils';
 import Header from '../../../../components/Header';
 import Footer from '../../../../components/Footer';
@@ -12,7 +11,6 @@ import { FiArrowLeft, FiTrash2, FiAlertTriangle } from 'react-icons/fi';
 import Link from 'next/link';
 
 export default function DeleteProjectPage({ params }: { params: { id: string } }) {
-  const { user, loading } = useAuth();
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -20,36 +18,31 @@ export default function DeleteProjectPage({ params }: { params: { id: string } }
   const [project, setProject] = useState<Project | null>(null);
 
   useEffect(() => {
-    // Redirect if not logged in
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
-
-  useEffect(() => {
     const fetchProject = async () => {
-      if (user) {
-        try {
-          setIsLoading(true);
-          const allProjects = await getProjects();
-          const foundProject = allProjects.find(p => p.id === params.id);
-          
-          if (foundProject) {
-            setProject(foundProject);
-          } else {
-            setErrorMessage('Project not found');
-          }
-        } catch (error) {
-          console.error('Error fetching project:', error);
-          setErrorMessage(error instanceof Error ? error.message : 'Unknown error');
-        } finally {
-          setIsLoading(false);
+      try {
+        setIsLoading(true);
+        
+        // Get all projects
+        const allProjects = await getProjects();
+        
+        // Find the specific project by ID
+        const projectToDelete = allProjects.find(p => p.id === params.id);
+        
+        if (projectToDelete) {
+          setProject(projectToDelete);
+        } else {
+          setErrorMessage('Project not found');
         }
+      } catch (error) {
+        console.error('Error fetching project:', error);
+        setErrorMessage(error instanceof Error ? error.message : 'Unknown error');
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchProject();
-  }, [user, params.id]);
+  }, [params.id]);
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -80,7 +73,7 @@ export default function DeleteProjectPage({ params }: { params: { id: string } }
     }
   };
 
-  if (loading || isLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <BackgroundDesign />
