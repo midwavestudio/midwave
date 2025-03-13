@@ -3,7 +3,6 @@
 import { FirebaseApp } from 'firebase/app';
 import { Auth } from 'firebase/auth';
 import { Firestore } from 'firebase/firestore';
-import { FirebaseStorage } from 'firebase/storage';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -20,58 +19,40 @@ const firebaseConfig = {
 let firebaseApp: FirebaseApp = {} as FirebaseApp;
 let auth: Auth = {} as Auth;
 let db: Firestore = {} as Firestore;
-let storage: FirebaseStorage = {} as FirebaseStorage;
 
-// Initialize Firebase lazily to avoid SSR issues
+// Initialize Firebase dynamically
 const initializeFirebase = async () => {
   try {
-    console.log('Initializing Firebase...');
-    
-    // Dynamically import Firebase modules
-    const { initializeApp, getApps } = await import('firebase/app');
-    const { getAuth } = await import('firebase/auth');
-    const { getFirestore } = await import('firebase/firestore');
-    const { getStorage } = await import('firebase/storage');
-
-    console.log('Firebase modules imported successfully');
-    console.log('Firebase config:', JSON.stringify({
-      apiKey: firebaseConfig.apiKey,
-      authDomain: firebaseConfig.authDomain,
-      projectId: firebaseConfig.projectId,
-      storageBucket: firebaseConfig.storageBucket,
-      // Omit sensitive values
-    }));
-
-    // Check if Firebase is already initialized
-    if (getApps().length === 0) {
-      // Initialize Firebase
+    if (!Object.keys(firebaseApp).length) {
+      const { initializeApp } = await import('firebase/app');
       firebaseApp = initializeApp(firebaseConfig);
-      console.log("Firebase initialized successfully");
-    } else {
-      // Use existing Firebase app
-      firebaseApp = getApps()[0];
-      console.log("Using existing Firebase app");
+      
+      const { getFirestore } = await import('firebase/firestore');
+      db = getFirestore(firebaseApp);
+      
+      const { getAuth } = await import('firebase/auth');
+      auth = getAuth(firebaseApp);
+      
+      console.log('Firebase initialized successfully');
     }
-    
-    // Initialize Firebase services
-    auth = getAuth(firebaseApp);
-    db = getFirestore(firebaseApp);
-    storage = getStorage(firebaseApp);
-    
-    console.log("Firebase services initialized successfully");
-    return { auth, db, storage };
+    return { app: firebaseApp, auth, db };
   } catch (error) {
-    console.error("Firebase initialization error:", error);
-    return { auth, db, storage };
+    console.error('Error initializing Firebase:', error);
+    return { app: firebaseApp, auth, db };
   }
 };
 
-// Only initialize Firebase if we're in the browser
-if (typeof window !== 'undefined') {
-  // Initialize Firebase immediately but don't block rendering
-  initializeFirebase().catch(error => {
-    console.error("Failed to initialize Firebase:", error);
-  });
-}
+// Check if Firebase is initialized
+const isFirebaseInitialized = () => {
+  return Object.keys(firebaseApp).length > 0;
+};
 
-export { auth, db, storage, initializeFirebase }; 
+// Ensure Firebase is initialized
+const ensureFirebaseInitialized = async () => {
+  if (!isFirebaseInitialized()) {
+    await initializeFirebase();
+  }
+  return isFirebaseInitialized();
+};
+
+export { firebaseApp, auth, db, initializeFirebase, isFirebaseInitialized, ensureFirebaseInitialized }; 

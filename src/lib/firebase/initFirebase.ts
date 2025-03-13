@@ -1,15 +1,14 @@
 'use client';
 
 import { collection, doc, setDoc, getDocs, query, where } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from './firebase';
-import { STORAGE_FOLDERS, Project } from './projectUtils';
+import { db } from './firebase';
+import { Project } from './projectUtils';
 
 // Sample project data
 import { sampleProjects } from './sampleData';
 
 /**
- * Initialize Firebase Storage folders and Firestore collections
+ * Initialize Firebase Firestore collections
  */
 export const initializeFirebase = async () => {
   try {
@@ -18,8 +17,7 @@ export const initializeFirebase = async () => {
     // Create projects collection in Firestore
     await initializeFirestoreProjects();
     
-    // Create folders in Firebase Storage
-    await initializeStorageFolders();
+    // No longer need to initialize Storage folders
     
     console.log('Firebase initialization complete!');
     return true;
@@ -62,30 +60,6 @@ const initializeFirestoreProjects = async () => {
     console.log('Firestore projects collection initialized successfully');
   } catch (error) {
     console.error('Error initializing Firestore projects:', error);
-    throw error;
-  }
-};
-
-/**
- * Initialize Firebase Storage folders
- */
-const initializeStorageFolders = async () => {
-  try {
-    console.log('Initializing Firebase Storage folders...');
-    
-    // Create a dummy file in each folder to ensure they exist
-    const projectsRef = ref(storage, `${STORAGE_FOLDERS.PROJECTS}/.placeholder`);
-    const thumbnailsRef = ref(storage, `${STORAGE_FOLDERS.THUMBNAILS}/.placeholder`);
-    
-    // Create a simple text file
-    const placeholderContent = new Blob(['This is a placeholder file to ensure the folder exists.'], { type: 'text/plain' });
-    
-    await uploadBytes(projectsRef, placeholderContent);
-    await uploadBytes(thumbnailsRef, placeholderContent);
-    
-    console.log('Firebase Storage folders initialized successfully');
-  } catch (error) {
-    console.error('Error initializing Storage folders:', error);
     throw error;
   }
 };

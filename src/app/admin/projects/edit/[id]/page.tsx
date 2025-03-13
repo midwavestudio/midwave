@@ -10,11 +10,11 @@ import BackgroundDesign from '@/app/components/BackgroundDesign';
 import ImageUrlHelper from '@/app/components/ImageUrlHelper';
 import FirebaseStatus from '@/app/components/FirebaseStatus';
 import { getDocument, updateDocument } from '@/lib/firebase/firebaseUtils';
-import { Project, getProjects } from '@/lib/firebase/projectUtils';
-import { compressImage } from '@/lib/utils/imageUtils';
+import { Project, getProjects, compressImage } from '@/lib/firebase/projectUtils';
 import { FiArrowLeft, FiSave } from 'react-icons/fi';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import AdminLayout from '../../AdminLayout';
 
 // Define the props type to match Next.js's expectations
 type EditProjectProps = {
@@ -109,7 +109,7 @@ export default function EditProject({ params }: EditProjectProps) {
       
       try {
         // Compress the image before creating a preview
-        const compressedImage = await compressImage(file, 1200, 800, 0.7);
+        const compressedImage = await compressImage(file, 600, 400, 0.7);
         setThumbnailPreview(compressedImage);
       } catch (error) {
         console.error('Error compressing thumbnail:', error);
@@ -249,295 +249,312 @@ export default function EditProject({ params }: EditProjectProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <BackgroundDesign />
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#b85a00]"></div>
-      </div>
+      <AdminLayout>
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#b85a00]"></div>
+        </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen">
-      <BackgroundDesign />
-      <Header />
+    <AdminLayout>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-2">Edit Project</h1>
+        <p className="text-gray-500">Update project details</p>
+      </div>
       
-      <main className="pt-24 md:pt-32 pb-16 relative z-10">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="bg-[#09090b]/95 backdrop-blur-md rounded-xl p-4 md:p-6 mb-6 border border-[#b85a00]/20"
-          >
-            <div className="flex justify-between items-center">
-              <h1 className="text-2xl md:text-3xl font-bold text-white">Edit Project</h1>
-              <Link 
-                href="/admin/projects" 
-                className="flex items-center space-x-2 bg-[#0f0f13] hover:bg-gray-700 text-white px-3 py-1.5 rounded-lg transition-colors text-sm"
-              >
-                <FiArrowLeft size={16} />
-                <span>Back to Projects</span>
-              </Link>
-            </div>
-            <p className="text-gray-400 text-sm md:text-base mt-2">
-              Update project details
-            </p>
-          </motion.div>
-          
-          {message && (
-            <div className={`p-4 mb-6 rounded-lg ${
-              messageType === 'success' ? 'bg-green-900/20 text-green-300' : 'bg-red-900/20 text-red-300'
-            }`}>
-              {message}
-            </div>
-          )}
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="bg-[#09090b]/95 backdrop-blur-md rounded-xl p-4 md:p-6 border border-[#b85a00]/20"
-          >
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="col-span-2">
-                  <label htmlFor="title" className="block text-white font-medium mb-2">Project Title *</label>
-                  <input
-                    id="title"
-                    type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    required
-                    className="w-full px-4 py-2 bg-[#0f0f13] border border-[#b85a00]/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]/50 focus:border-transparent"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="slug" className="block text-white font-medium mb-2">Slug *</label>
-                  <input
-                    id="slug"
-                    type="text"
-                    value={slug}
-                    onChange={(e) => setSlug(e.target.value)}
-                    required
-                    className="w-full px-4 py-2 bg-[#0f0f13] border border-[#b85a00]/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]/50 focus:border-transparent"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="category" className="block text-white font-medium mb-2">Category *</label>
-                  <input
-                    id="category"
-                    type="text"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    required
-                    className="w-full px-4 py-2 bg-[#0f0f13] border border-[#b85a00]/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]/50 focus:border-transparent"
-                  />
-                </div>
-                
-                <div className="col-span-2">
-                  <label htmlFor="description" className="block text-white font-medium mb-2">Short Description *</label>
-                  <textarea
-                    id="description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    required
-                    rows={2}
-                    className="w-full px-4 py-2 bg-[#0f0f13] border border-[#b85a00]/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]/50 focus:border-transparent"
-                  />
-                </div>
-                
-                <div className="col-span-2">
-                  <label htmlFor="fullDescription" className="block text-white font-medium mb-2">Full Description</label>
-                  <textarea
-                    id="fullDescription"
-                    value={fullDescription}
-                    onChange={(e) => setFullDescription(e.target.value)}
-                    rows={4}
-                    className="w-full px-4 py-2 bg-[#0f0f13] border border-[#b85a00]/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]/50 focus:border-transparent"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="client" className="block text-white font-medium mb-2">Client</label>
-                  <input
-                    id="client"
-                    type="text"
-                    value={client}
-                    onChange={(e) => setClient(e.target.value)}
-                    className="w-full px-4 py-2 bg-[#0f0f13] border border-[#b85a00]/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]/50 focus:border-transparent"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="date" className="block text-white font-medium mb-2">Date</label>
-                  <input
-                    id="date"
-                    type="text"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    placeholder="e.g. January 2023"
-                    className="w-full px-4 py-2 bg-[#0f0f13] border border-[#b85a00]/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]/50 focus:border-transparent"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="services" className="block text-white font-medium mb-2">Services (comma-separated)</label>
-                  <input
-                    id="services"
-                    type="text"
-                    value={services}
-                    onChange={(e) => setServices(e.target.value)}
-                    placeholder="e.g. UX/UI Design, Web Development"
-                    className="w-full px-4 py-2 bg-[#0f0f13] border border-[#b85a00]/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]/50 focus:border-transparent"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="technologies" className="block text-white font-medium mb-2">Technologies (comma-separated)</label>
-                  <input
-                    id="technologies"
-                    type="text"
-                    value={technologies}
-                    onChange={(e) => setTechnologies(e.target.value)}
-                    placeholder="e.g. React, Next.js, Tailwind CSS"
-                    className="w-full px-4 py-2 bg-[#0f0f13] border border-[#b85a00]/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]/50 focus:border-transparent"
-                  />
-                </div>
-                
-                <div className="col-span-2">
-                  <label htmlFor="thumbnailUrl" className="block text-white font-medium mb-2">Thumbnail Image</label>
-                  <div className="space-y-4">
-                    <div className="flex flex-col space-y-2">
-                      <label className="inline-flex items-center px-4 py-2 bg-[#0f0f13] text-white rounded-lg hover:bg-gray-700 transition-colors cursor-pointer w-fit">
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        Upload New Thumbnail
-                        <input 
-                          type="file" 
-                          ref={fileInputRef}
-                          onChange={handleThumbnailUpload} 
-                          accept="image/*" 
-                          className="hidden" 
-                        />
-                      </label>
-                      {uploadedThumbnail && (
-                        <div className="text-sm text-gray-400">
-                          Selected: {uploadedThumbnail.name}
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="text-gray-400 text-sm">
-                      <span className="font-medium">OR</span> provide a URL:
-                    </div>
-                    
-                    <div className="flex space-x-2">
-                      <input
-                        id="thumbnailUrl"
-                        type="url"
-                        value={thumbnailUrl}
-                        onChange={(e) => setThumbnailUrl(e.target.value)}
-                        placeholder="https://example.com/image.jpg"
-                        className="flex-1 px-4 py-2 bg-[#0f0f13] border border-[#b85a00]/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]/50 focus:border-transparent"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => openImageHelper('thumbnail')}
-                        className="px-4 py-2 bg-[#0f0f13] text-white rounded-lg hover:bg-gray-700 transition-colors"
-                      >
-                        Find Image
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {(thumbnailPreview || thumbnailUrl) && (
-                    <div className="mt-4 relative w-full h-40 bg-[#0f0f13] rounded-lg overflow-hidden">
-                      <img 
-                        src={thumbnailPreview || thumbnailUrl} 
-                        alt="Thumbnail preview" 
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNCAxNmw0LjU4Ni00LjU4NmEyIDIgMCAwMTIuODI4IDBMMTYgMTZtLTItMmwxLjU4Ni0xLjU4NmEyIDIgMCAwMTIuODI4IDBMMjAgMTRtLTYtNmguMDFNNiAyMGgxMmEyIDIgMCAwMDItMlY2YTIgMiAwIDAwLTItMkg2YTIgMiAwIDAwLTIgMnYxMmEyIDIgMCAwMDIgMnoiIHN0cm9rZT0iIzY2NiIgc3Ryb2tlLXdpZHRoPSIxLjUiIGZpbGw9Im5vbmUiLz48L3N2Zz4=';
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
-                
-                <div className="col-span-2">
-                  <label htmlFor="featured" className="flex items-center space-x-2 text-white">
-                    <input
-                      id="featured"
-                      type="checkbox"
-                      checked={featured}
-                      onChange={(e) => {
-                        console.log('Checkbox changed to:', e.target.checked);
-                        setFeatured(e.target.checked);
-                      }}
-                      className="rounded text-[#b85a00] focus:ring-[#b85a00]"
-                    />
-                    <span>Featured Project</span>
-                  </label>
-                  <p className="text-gray-400 text-sm mt-1">
-                    Feature this project on the homepage
-                  </p>
-                </div>
-                
-                <div className="col-span-2">
-                  <label htmlFor="url" className="block text-white font-medium mb-2">Project URL (Optional)</label>
-                  <input
-                    id="url"
-                    type="url"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    placeholder="https://example.com"
-                    className="w-full px-4 py-2 bg-[#0f0f13] border border-[#b85a00]/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]/50 focus:border-transparent"
-                  />
-                  <p className="text-gray-400 text-sm mt-1">
-                    Enter the URL to the live project if available
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex justify-end pt-4">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex items-center space-x-2 bg-[#b85a00] hover:bg-[#a04d00] text-white px-6 py-3 rounded-lg transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                      <span>Updating...</span>
-                    </>
-                  ) : (
-                    <>
-                      <FiSave size={18} />
-                      <span>Update Project</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </motion.div>
-          
-          {showImageHelper && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="mt-6 bg-[#09090b]/95 backdrop-blur-md rounded-xl p-4 md:p-6 border border-[#b85a00]/20"
-            >
-              <ImageUrlHelper onSelectImage={handleImageSelect} />
-            </motion.div>
-          )}
+      {message && (
+        <div className={`p-4 mb-6 rounded-lg ${
+          messageType === 'success' ? 'bg-green-900/20 text-green-300' : 'bg-red-900/20 text-red-300'
+        }`}>
+          {message}
         </div>
-      </main>
+      )}
       
-      <Footer />
-    </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="col-span-2">
+            <label htmlFor="title" className="block mb-2 font-medium">
+              Project Title <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg"
+            />
+          </div>
+          
+          <div>
+            <label htmlFor="slug" className="block mb-2 font-medium">
+              Slug <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="slug"
+              name="slug"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              required
+              className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg"
+            />
+          </div>
+          
+          <div>
+            <label htmlFor="category" className="block mb-2 font-medium">
+              Category <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="category"
+              name="category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              required
+              className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg"
+            />
+          </div>
+          
+          <div className="col-span-2">
+            <label htmlFor="description" className="block mb-2 font-medium">
+              Short Description <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              required
+              rows={2}
+              className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg"
+            />
+          </div>
+          
+          <div className="col-span-2">
+            <label htmlFor="fullDescription" className="block mb-2 font-medium">
+              Full Description
+            </label>
+            <textarea
+              id="fullDescription"
+              name="fullDescription"
+              value={fullDescription}
+              onChange={(e) => setFullDescription(e.target.value)}
+              rows={4}
+              className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg"
+            />
+          </div>
+          
+          <div>
+            <label htmlFor="client" className="block mb-2 font-medium">
+              Client
+            </label>
+            <input
+              type="text"
+              id="client"
+              name="client"
+              value={client}
+              onChange={(e) => setClient(e.target.value)}
+              className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg"
+            />
+          </div>
+          
+          <div>
+            <label htmlFor="date" className="block mb-2 font-medium">
+              Date
+            </label>
+            <input
+              type="text"
+              id="date"
+              name="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              placeholder="e.g. January 2023"
+              className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg"
+            />
+          </div>
+          
+          <div>
+            <label htmlFor="services" className="block mb-2 font-medium">
+              Services (comma-separated)
+            </label>
+            <input
+              type="text"
+              id="services"
+              name="services"
+              value={services}
+              onChange={(e) => setServices(e.target.value)}
+              placeholder="e.g. UX/UI Design, Web Development"
+              className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg"
+            />
+          </div>
+          
+          <div>
+            <label htmlFor="technologies" className="block mb-2 font-medium">
+              Technologies (comma-separated)
+            </label>
+            <input
+              type="text"
+              id="technologies"
+              name="technologies"
+              value={technologies}
+              onChange={(e) => setTechnologies(e.target.value)}
+              placeholder="e.g. React, Next.js, Tailwind CSS"
+              className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg"
+            />
+          </div>
+          
+          <div className="col-span-2">
+            <label htmlFor="thumbnailUrl" className="block mb-2 font-medium">
+              Thumbnail URL
+            </label>
+            <input
+              type="text"
+              id="thumbnailUrl"
+              name="thumbnailUrl"
+              value={thumbnailUrl}
+              onChange={(e) => setThumbnailUrl(e.target.value)}
+              placeholder="https://example.com/image.jpg"
+              className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg"
+            />
+            <p className="mt-1 text-gray-400 text-sm">
+              Enter a URL or upload an image below
+            </p>
+          </div>
+          
+          <div className="col-span-2">
+            <label htmlFor="thumbnailUpload" className="block mb-2 font-medium">
+              Upload New Thumbnail
+            </label>
+            <input
+              type="file"
+              id="thumbnailUpload"
+              accept="image/*"
+              onChange={handleThumbnailUpload}
+              className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg"
+            />
+            {thumbnailPreview && (
+              <div className="mt-2">
+                <p className="text-gray-400 mb-1">Preview:</p>
+                <div className="relative w-32 h-32">
+                  <img
+                    src={thumbnailPreview}
+                    alt="Thumbnail preview"
+                    className="object-cover w-full h-full rounded-lg"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="col-span-2">
+            <label htmlFor="imagesUpload" className="block mb-2 font-medium">
+              Add Project Images
+            </label>
+            <input
+              type="file"
+              id="imagesUpload"
+              accept="image/*"
+              multiple
+              onChange={handleImagesUpload}
+              className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg"
+            />
+          </div>
+          
+          <div className="col-span-2">
+            <label className="block mb-2 font-medium">
+              Project Images
+            </label>
+            {imagePreviewUrls.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                {imagePreviewUrls.map((url, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={url}
+                      alt={`Project image ${index + 1}`}
+                      className="object-cover w-full h-24 rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeUploadedImage(index)}
+                      className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1"
+                      aria-label="Remove image"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-400">No images uploaded yet</p>
+            )}
+          </div>
+          
+          <div className="col-span-2">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="featured"
+                name="featured"
+                checked={featured}
+                onChange={(e) => {
+                  console.log('Checkbox changed to:', e.target.checked);
+                  setFeatured(e.target.checked);
+                }}
+                className="mr-2"
+              />
+              <label htmlFor="featured" className="font-medium">
+                Featured project
+              </label>
+            </div>
+            <p className="text-gray-400 text-sm mt-1">
+              Featured projects are displayed on the homepage
+            </p>
+          </div>
+          
+          <div className="col-span-2">
+            <label htmlFor="url" className="block mb-2 font-medium">
+              Project URL (Optional)
+            </label>
+            <input
+              type="url"
+              id="url"
+              name="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://example.com"
+              className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg"
+            />
+            <p className="mt-1 text-gray-400 text-sm">
+              Enter the URL to the live project if available
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex justify-end space-x-3">
+          <button
+            type="button"
+            onClick={() => router.push('/admin/projects')}
+            className="px-4 py-2 bg-gray-800 text-white rounded-lg"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={`px-4 py-2 bg-[#b85a00] text-white rounded-lg ${
+              isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#a04d00]'
+            }`}
+          >
+            {isSubmitting ? 'Updating...' : 'Update Project'}
+          </button>
+        </div>
+      </form>
+    </AdminLayout>
   );
 } 

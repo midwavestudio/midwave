@@ -1,13 +1,13 @@
 'use client';
 
 import { collection, getDocs, doc, getDoc, query, where, orderBy } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, listAll } from 'firebase/storage';
-import { db, storage } from './firebase';
+import { db } from './firebase';
 
-// Firebase Storage folder structure
-export const STORAGE_FOLDERS = {
-  PROJECTS: 'projects',
-  THUMBNAILS: 'thumbnails',
+// Remove STORAGE_FOLDERS constant
+// Instead, create a constant for placeholder images
+export const PLACEHOLDER_IMAGES = {
+  THUMBNAIL: 'https://via.placeholder.com/600x400/2a2a2a/FFFFFF/?text=Project+Thumbnail',
+  PROJECT: 'https://via.placeholder.com/1200x800/2a2a2a/FFFFFF/?text=Project+Image',
 };
 
 // Project interface
@@ -22,70 +22,73 @@ export interface Project {
   date?: string;
   services?: string[];
   technologies?: string[];
-  thumbnailUrl: string; // Can be a URL or base64 encoded image
-  imageUrls: string[]; // Can be URLs or base64 encoded images
+  thumbnailUrl: string; // External URL or base64 encoded image
+  imageUrls: string[]; // Array of external URLs or base64 encoded images
   url?: string; // External URL to the live project
   featured?: boolean;
   order?: number;
 }
 
 /**
- * Create the necessary folders in Firebase Storage
+ * Check if a string is a valid URL
  */
-export const createStorageFolders = async () => {
-  try {
-    // We don't actually need to create folders in Firebase Storage
-    // They are automatically created when files are uploaded
-    console.log('Firebase Storage folders will be created automatically when files are uploaded');
+export const isValidUrl = (url: string): boolean => {
+  if (!url) return false;
+  
+  // Check if it's a base64 image
+  if (url.startsWith('data:image/')) {
     return true;
-  } catch (error) {
-    console.error('Error creating storage folders:', error);
-    throw error;
+  }
+  
+  // Check if it's a URL
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
   }
 };
 
+// Replace Firebase Storage functions with utility functions for external images
+
 /**
- * Upload a project image to Firebase Storage
+ * Create an array of placeholder image URLs
+ * @param count Number of placeholder images to create
+ * @returns Array of placeholder image URLs
  */
-export const uploadProjectImage = async (
-  projectId: string, 
-  file: File, 
-  isThumbnail: boolean = false
-): Promise<string> => {
-  try {
-    const folder = isThumbnail ? STORAGE_FOLDERS.THUMBNAILS : STORAGE_FOLDERS.PROJECTS;
-    const path = `${folder}/${projectId}/${file.name}`;
-    const storageRef = ref(storage, path);
-    
-    await uploadBytes(storageRef, file);
-    const downloadURL = await getDownloadURL(storageRef);
-    
-    return downloadURL;
-  } catch (error) {
-    console.error('Error uploading project image:', error);
-    throw error;
-  }
+export const createPlaceholderImages = (count: number = 3): string[] => {
+  return Array(count).fill(0).map((_, index) => 
+    `https://via.placeholder.com/1200x800/2a2a2a/FFFFFF/?text=Project+Image+${index + 1}`
+  );
 };
 
 /**
- * Get all project images for a specific project
+ * Get recommended image hosting services
+ * @returns List of image hosting services
  */
-export const getProjectImages = async (projectId: string): Promise<string[]> => {
-  try {
-    const storageRef = ref(storage, `${STORAGE_FOLDERS.PROJECTS}/${projectId}`);
-    const result = await listAll(storageRef);
-    
-    const urls = await Promise.all(
-      result.items.map(async (itemRef) => {
-        return getDownloadURL(itemRef);
-      })
-    );
-    
-    return urls;
-  } catch (error) {
-    console.error('Error getting project images:', error);
-    return [];
-  }
+export const getImageHostingServices = (): { name: string, url: string, description: string }[] => {
+  return [
+    {
+      name: 'ImgBB',
+      url: 'https://imgbb.com/',
+      description: 'Free image hosting service with API support'
+    },
+    {
+      name: 'Imgur',
+      url: 'https://imgur.com/',
+      description: 'Popular image hosting platform'
+    },
+    {
+      name: 'Cloudinary',
+      url: 'https://cloudinary.com/',
+      description: 'Media management platform with free tier'
+    },
+    {
+      name: 'Postimages',
+      url: 'https://postimages.org/',
+      description: 'Free, anonymous image hosting'
+    }
+  ];
 };
 
 /**
@@ -115,9 +118,22 @@ export const getProjects = async (): Promise<Project[]> => {
             
             console.log(`Normalizing localStorage project "${project.title}": ${project.featured} (${typeof project.featured}) -> ${normalizedFeatured}`);
             
+            // Ensure thumbnailUrl and imageUrls exist
+            let thumbnailUrl = project.thumbnailUrl || project.thumbnail || '';
+            if (!thumbnailUrl) {
+              thumbnailUrl = PLACEHOLDER_IMAGES.THUMBNAIL;
+            }
+            
+            let imageUrls = Array.isArray(project.imageUrls) ? project.imageUrls : [];
+            if (imageUrls.length === 0) {
+              imageUrls = createPlaceholderImages(3);
+            }
+            
             return {
               ...project,
-              featured: normalizedFeatured
+              featured: normalizedFeatured,
+              thumbnailUrl,
+              imageUrls
             };
           });
           
@@ -223,16 +239,15 @@ export const getProjectBySlug = async (slug: string): Promise<Project | null> =>
     const projectDoc = snapshot.docs[0];
     const projectData = projectDoc.data() as Omit<Project, 'id'>;
     
-    // Only try to get images from Storage if they're not already in the document
+    // Ensure thumbnailUrl and imageUrls exist
+    let thumbnailUrl = projectData.thumbnailUrl || projectData.thumbnail || '';
+    if (!thumbnailUrl) {
+      thumbnailUrl = PLACEHOLDER_IMAGES.THUMBNAIL;
+    }
+    
     let imageUrls = Array.isArray(projectData.imageUrls) ? projectData.imageUrls : [];
     if (imageUrls.length === 0) {
-      try {
-        // Try to get images from Firebase Storage
-        imageUrls = await getProjectImages(projectDoc.id);
-      } catch (error) {
-        console.warn(`Could not get images for project ${projectDoc.id} from Storage:`, error);
-        // Continue with empty imageUrls array
-      }
+      imageUrls = createPlaceholderImages(3);
     }
     
     // Filter out any invalid image URLs
@@ -242,7 +257,7 @@ export const getProjectBySlug = async (slug: string): Promise<Project | null> =>
       id: projectDoc.id,
       ...projectData,
       imageUrls,
-      thumbnailUrl: projectData.thumbnailUrl || ''
+      thumbnailUrl
     };
   } catch (error) {
     console.error('Error getting project by slug:', error);
@@ -389,17 +404,20 @@ export const createTestFeaturedProject = (): Project | null => {
     // Create a unique ID for the test project
     const id = `test-${Date.now()}`;
     
+    // Create test project images
+    const imageUrls = createPlaceholderImages(5);
+    
     // Create the test project with featured flag as a boolean
     const testProject: Project = {
       id,
       title: `Test Project ${Math.floor(Math.random() * 1000)}`,
       description: 'This is a test project created for debugging purposes.',
       category: 'Test',
-      thumbnailUrl: 'https://via.placeholder.com/600x400/2a2a2a/FFFFFF/?text=Test+Project',
+      thumbnailUrl: PLACEHOLDER_IMAGES.THUMBNAIL,
+      imageUrls,
       featured: true, // Explicitly set as boolean true
       createdAt: new Date().toISOString(),
       slug: `test-project-${Date.now()}`,
-      imageUrls: []
     };
     
     // Add the test project to localStorage
@@ -432,4 +450,98 @@ export const createTestFeaturedProject = (): Project | null => {
     console.error('Error creating test project:', error);
     return null;
   }
+};
+
+// Add new utility functions for image handling
+
+/**
+ * Convert a file to a base64 string
+ * @param file File to convert
+ * @returns Promise resolving to the base64 string
+ */
+export const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
+};
+
+/**
+ * Convert a base64 string to a Blob object
+ * @param base64 Base64 string to convert
+ * @returns Blob object
+ */
+export const base64ToBlob = (base64: string): Blob => {
+  const parts = base64.split(';base64,');
+  const contentType = parts[0].split(':')[1];
+  const raw = window.atob(parts[1]);
+  const rawLength = raw.length;
+  const uInt8Array = new Uint8Array(rawLength);
+  
+  for (let i = 0; i < rawLength; ++i) {
+    uInt8Array[i] = raw.charCodeAt(i);
+  }
+  
+  return new Blob([uInt8Array], { type: contentType });
+};
+
+/**
+ * Compress an image file
+ * @param file File to compress
+ * @param maxWidth Maximum width
+ * @param maxHeight Maximum height
+ * @param quality Quality (0-1)
+ * @returns Promise resolving to the compressed image as a base64 string
+ */
+export const compressImage = (
+  file: File,
+  maxWidth: number = 1200,
+  maxHeight: number = 800,
+  quality: number = 0.8
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        const result = canvas.toDataURL(file.type, quality);
+        resolve(result);
+      };
+      
+      img.onerror = (error) => {
+        reject(error);
+      };
+    };
+    
+    reader.onerror = (error) => {
+      reject(error);
+    };
+  });
 }; 
