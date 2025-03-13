@@ -24,7 +24,12 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
   
   // Check if URL is external (starts with http:// or https://)
   const isExternalUrl = (url: string) => {
-    return url.startsWith('http://') || url.startsWith('https://');
+    return url?.startsWith('http://') || url?.startsWith('https://');
+  };
+  
+  // Check if URL is a local path (starts with '/images/')
+  const isLocalPath = (url: string) => {
+    return url?.startsWith('/images/');
   };
   
   // Reset current image index and zoom when project changes
@@ -183,6 +188,9 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
     // For URLs
     if (url.startsWith('http://') || url.startsWith('https://')) return true;
     
+    // For local images in public directory
+    if (url.startsWith('/images/')) return true;
+    
     return false;
   };
 
@@ -231,29 +239,7 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
                     marginTop: imageDimensions.isVertical ? '20px' : 'auto'
                   }}
                 >
-                  {isExternalUrl(currentImage) ? (
-                    <div 
-                      style={{ 
-                        transform: `scale(${zoomLevel}) translate(${panPosition.x / zoomLevel}px, ${panPosition.y / zoomLevel}px)`,
-                        transformOrigin: 'top center',
-                        transition: isDragging ? 'none' : 'transform 0.2s ease-out',
-                        width: '100%',
-                        display: 'flex',
-                        justifyContent: 'center'
-                      }}
-                    >
-                      <img
-                        src={currentImage}
-                        alt={`${project.title} - Expanded View`}
-                        className="w-full object-contain"
-                        style={{
-                          maxHeight: imageDimensions.isVertical ? 'none' : '80vh'
-                        }}
-                        draggable="false"
-                        onLoad={handleImageLoad}
-                      />
-                    </div>
-                  ) : (
+                  {hasValidImage ? (
                     <div 
                       className="relative"
                       style={{ 
@@ -269,24 +255,65 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
                         justifyContent: 'center'
                       }}
                     >
-                      {imageDimensions.isVertical ? (
+                      {isExternalUrl(currentImage) ? (
                         <img
                           src={currentImage}
                           alt={`${project.title} - Expanded View`}
                           className="w-full h-auto object-contain"
                           draggable="false"
                           onLoad={handleImageLoad}
+                          onError={(e) => {
+                            // Hide the image on error
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            // Show fallback
+                            const parent = target.parentElement;
+                            if (parent) {
+                              parent.classList.add('flex', 'items-center', 'justify-center', 'bg-[#0f0f13]');
+                              const fallback = document.createElement('div');
+                              fallback.innerHTML = `
+                                <svg class="w-16 h-16 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <p class="text-gray-500 mt-2">Image not available</p>
+                              `;
+                              parent.appendChild(fallback);
+                            }
+                          }}
                         />
                       ) : (
                         <Image
                           src={currentImage}
                           alt={`${project.title} - Expanded View`}
                           fill
-                          className="object-contain"
-                          draggable="false"
-                          onLoad={handleImageLoad}
+                          className="object-cover hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            // Hide the image on error
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            // Show fallback
+                            const parent = target.parentElement;
+                            if (parent) {
+                              parent.classList.add('flex', 'items-center', 'justify-center', 'bg-[#0f0f13]');
+                              const fallback = document.createElement('div');
+                              fallback.innerHTML = `
+                                <svg class="w-16 h-16 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <p class="text-gray-500 mt-2">Image not available</p>
+                              `;
+                              parent.appendChild(fallback);
+                            }
+                          }}
                         />
                       )}
+                    </div>
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0f0f13]">
+                      <svg className="w-16 h-16 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <p className="text-gray-500 mt-2">No image available</p>
                     </div>
                   )}
 
@@ -416,7 +443,7 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
                           }}
                         />
                       ) : (
-                        // Use Next.js Image for internal URLs
+                        // Use Next.js Image for internal URLs and local paths
                         <Image
                           src={currentImage}
                           alt={`${project.title} - Image ${currentImageIndex + 1}`}
