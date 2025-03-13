@@ -3,9 +3,24 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Project, getFeaturedProjects, createTestFeaturedProject } from '@/lib/firebase/projectUtils';
+import { Project, getFeaturedProjects } from '@/lib/firebase/projectUtils';
 import ProjectCard from './ProjectCard';
 import ProjectModal from './ProjectModal';
+
+// Client-side only component wrapper to prevent hydration errors
+const ClientOnly = ({ children }: { children: React.ReactNode }) => {
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  
+  if (!isMounted) {
+    return null;
+  }
+  
+  return <>{children}</>;
+};
 
 const FeaturedProjects = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -13,8 +28,12 @@ const FeaturedProjects = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [debugMode, setDebugMode] = useState(false);
-  const [localStorageContent, setLocalStorageContent] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  // Check for client-side
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const fetchProjects = async () => {
     try {
@@ -23,42 +42,20 @@ const FeaturedProjects = () => {
       
       console.log('Fetching featured projects...');
       
-      // Check localStorage content for debugging
-      if (typeof window !== 'undefined') {
-        const localProjects = localStorage.getItem('localProjects');
-        setLocalStorageContent(localProjects);
-        
-        if (localProjects) {
-          try {
-            const parsedProjects = JSON.parse(localProjects);
-            console.log('Local projects found:', parsedProjects.length);
-            console.log('Projects with featured flag:', 
-              parsedProjects.filter((p: Project) => p.featured === true || p.featured === 'true').length
-            );
-          } catch (e) {
-            console.error('Error parsing localStorage:', e);
-          }
-        } else {
-          console.log('No projects found in localStorage');
-        }
-      }
-      
-      // Get featured projects, including test projects in development
-      const includeTestProjects = process.env.NODE_ENV === 'development';
-      console.log('Including test projects:', includeTestProjects);
-      
-      const featuredProjects = await getFeaturedProjects(includeTestProjects);
+      // Only include actual featured projects, no test projects
+      const featuredProjects = await getFeaturedProjects(false);
       console.log('Featured projects fetched:', featuredProjects.length);
       
       if (featuredProjects.length > 0) {
         setProjects(featuredProjects);
       } else {
         setProjects([]);
-        setErrorMessage('No featured projects found. Please mark some projects as featured in the admin dashboard.');
+        setErrorMessage('No featured projects found. Projects can be marked as featured in the admin dashboard.');
       }
     } catch (error) {
       console.error('Error in fetchProjects:', error);
-      setErrorMessage(error instanceof Error ? error.message : 'Unknown error');
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error occurred while loading projects';
+      setErrorMessage(errorMsg);
       setProjects([]);
     } finally {
       setIsLoading(false);
@@ -75,26 +72,6 @@ const FeaturedProjects = () => {
     setIsModalOpen(true);
   };
 
-  // Create a test featured project
-  const handleCreateTestProject = async () => {
-    try {
-      createTestFeaturedProject();
-      
-      // Wait a moment for localStorage to update
-      setTimeout(() => {
-        fetchProjects();
-      }, 500);
-    } catch (error) {
-      console.error('Error creating test project:', error);
-      setErrorMessage(error instanceof Error ? error.message : 'Error creating test project');
-    }
-  };
-
-  // Toggle debug mode
-  const toggleDebugMode = () => {
-    setDebugMode(!debugMode);
-  };
-
   return (
     <section className="py-24 relative z-10">
       <div className="container mx-auto px-4">
@@ -109,46 +86,6 @@ const FeaturedProjects = () => {
           <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto font-medium">
             Explore our showcase of exceptional digital experiences crafted with precision and purpose.
           </p>
-          
-          {/* Debug button - always visible in development */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="mt-4">
-              <button 
-                onClick={toggleDebugMode}
-                className="text-xs text-gray-500 underline"
-              >
-                {debugMode ? 'Hide Debug Tools' : 'Show Debug Tools'}
-              </button>
-              
-              {debugMode && (
-                <div className="mt-2 flex flex-col items-center">
-                  <div className="flex justify-center gap-2 mb-2">
-                    <button 
-                      onClick={handleCreateTestProject}
-                      className="px-3 py-1 bg-blue-900/30 text-blue-300 rounded text-xs"
-                    >
-                      Create Test Featured Project
-                    </button>
-                    <button 
-                      onClick={fetchProjects}
-                      className="px-3 py-1 bg-green-900/30 text-green-300 rounded text-xs"
-                    >
-                      Refresh Projects
-                    </button>
-                  </div>
-                  
-                  {localStorageContent && (
-                    <div className="mt-2 text-left max-w-full overflow-x-auto">
-                      <p className="text-xs text-gray-500 mb-1">LocalStorage Content:</p>
-                      <div className="bg-gray-900/50 p-2 rounded text-xs text-gray-400 max-h-32 overflow-y-auto">
-                        <pre>{localStorageContent}</pre>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
         </motion.div>
 
         {isLoading ? (
@@ -158,16 +95,8 @@ const FeaturedProjects = () => {
         ) :
           <>
             {errorMessage && (
-              <div className="bg-red-900/20 text-red-300 p-4 rounded-lg mb-6">
-                <p>Error loading projects: {errorMessage}</p>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  <Link 
-                    href="/admin/projects"
-                    className="px-3 py-1 bg-[#b85a00]/30 hover:bg-[#b85a00]/50 rounded text-sm"
-                  >
-                    Manage Projects
-                  </Link>
-                </div>
+              <div className="bg-red-900/20 text-red-300 p-4 rounded-lg mb-6 text-center">
+                <p>{errorMessage}</p>
               </div>
             )}
             
@@ -190,21 +119,17 @@ const FeaturedProjects = () => {
               </div>
             ) : (
               <div className="text-center py-10">
-                <p className="text-gray-400">No featured projects found.</p>
-                <div className="mt-4 flex justify-center gap-4">
-                  <Link 
-                    href="/admin/projects"
-                    className="px-4 py-2 bg-[#b85a00] text-white rounded-lg hover:bg-[#a04d00] transition-colors inline-block"
-                  >
-                    Add Projects
-                  </Link>
-                  <button 
-                    onClick={handleCreateTestProject}
-                    className="px-4 py-2 bg-blue-900/30 text-blue-300 rounded-lg hover:bg-blue-900/50 transition-colors"
-                  >
-                    Create Test Project
-                  </button>
-                </div>
+                <p className="text-gray-400 mb-4">No featured projects found.</p>
+                <ClientOnly>
+                  {isClient && (
+                    <Link 
+                      href="/admin/projects"
+                      className="px-4 py-2 bg-[#b85a00] text-white rounded-lg hover:bg-[#a04d00] transition-colors inline-block"
+                    >
+                      Manage Projects
+                    </Link>
+                  )}
+                </ClientOnly>
               </div>
             )}
 
