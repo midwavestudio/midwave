@@ -11,6 +11,7 @@ export default function Contact() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     subject: '',
     message: ''
   });
@@ -42,6 +43,7 @@ export default function Contact() {
       setFormData({
         name: '',
         email: '',
+        phone: '',
         subject: '',
         message: ''
       });
@@ -130,6 +132,21 @@ export default function Contact() {
                 </div>
                 
                 <div>
+                  <label htmlFor="phone" className="block text-sm md:text-base font-medium text-gray-300 mb-1.5">
+                    Phone Number
+                  </label>
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 md:py-2.5 bg-[#0f0f13] border border-[#b85a00]/20 rounded-lg text-white text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-[#b85a00]/50 focus:border-transparent"
+                    placeholder="(123) 456-7890"
+                  />
+                </div>
+                
+                <div>
                   <label htmlFor="subject" className="block text-sm md:text-base font-medium text-gray-300 mb-1.5">
                     Subject
                   </label>
@@ -204,7 +221,7 @@ export default function Contact() {
                     </div>
                     <div>
                       <h3 className="text-white font-medium text-sm md:text-base">Email</h3>
-                      <p className="text-gray-400 mt-1 text-sm md:text-base">contact@midwavestudio.com</p>
+                      <p className="text-gray-400 mt-1 text-sm md:text-base">info@midwavestudio.com</p>
                     </div>
                   </div>
                   
@@ -214,7 +231,7 @@ export default function Contact() {
                     </div>
                     <div>
                       <h3 className="text-white font-medium text-sm md:text-base">Phone</h3>
-                      <p className="text-gray-400 mt-1 text-sm md:text-base">+1 (555) 123-4567</p>
+                      <p className="text-gray-400 mt-1 text-sm md:text-base">(720) 443-2517</p>
                     </div>
                   </div>
                   
@@ -225,9 +242,7 @@ export default function Contact() {
                     <div>
                       <h3 className="text-white font-medium text-sm md:text-base">Location</h3>
                       <p className="text-gray-400 mt-1 text-sm md:text-base">
-                        123 Digital Avenue<br />
-                        San Francisco, CA 94107<br />
-                        United States
+                        Kalispell, MT
                       </p>
                     </div>
                   </div>
