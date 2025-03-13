@@ -84,7 +84,7 @@ const Hero = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
           >
             Redefining Digital <br className="hidden sm:block" />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#b85a00] to-amber-500">Craftsmanship</span>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#b85a00] to-amber-500">Impact</span>
           </motion.h1>
           
           <motion.p 

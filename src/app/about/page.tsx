@@ -25,7 +25,7 @@ export default function About() {
             
             <div className="bg-[#0f0f13]/80 backdrop-blur-sm p-8 rounded-lg border border-[#b85a00]/20 mb-16 shadow-lg shadow-[#b85a00]/5">
               <p className="text-xl text-white font-bold mb-6">
-                Midwave Studio redefines digital craftsmanship for discerning clients across the United States. 
+                Midwave Studio redefines digital impact for discerning clients across the United States. 
                 We specialize in high-fidelity digital design and custom software solutions, catering to industries 
                 where visual storytelling and precision are paramount.
               </p>
@@ -66,7 +66,7 @@ export default function About() {
                     premium services through meticulous design and innovative technology solutions.
                   </p>
                   <p className="text-white font-bold mb-6">
-                    We believe that exceptional digital craftsmanship is the result of deep understanding, 
+                    We believe that exceptional digital impact is the result of deep understanding, 
                     strategic thinking, and relentless attention to detail. Every pixel, interaction, and 
                     line of code is crafted with purpose.
                   </p>
