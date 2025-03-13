@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Project } from '@/lib/firebase/projectUtils';
 
@@ -16,34 +15,40 @@ const ProjectCard = ({ project, onClick }: ProjectCardProps) => {
   const [imageError, setImageError] = useState(false);
   const [validThumbnail, setValidThumbnail] = useState(false);
 
+  // Safely access project properties
+  const title = project?.title || 'Untitled Project';
+  const description = project?.description || 'No description available';
+  const thumbnailUrl = project?.thumbnailUrl || project?.thumbnail || '';
+  const projectUrl = project?.url || '';
+
   // Check if URL is external (starts with http:// or https://)
   const isExternalUrl = (url: string) => {
-    return url.startsWith('http://') || url.startsWith('https://');
+    return url?.startsWith('http://') || url?.startsWith('https://');
   };
 
   // Check if the thumbnail URL is valid
   useEffect(() => {
-    if (!project.thumbnailUrl) {
+    if (!thumbnailUrl) {
       setValidThumbnail(false);
       setImageError(true);
       return;
     }
 
     // For base64 images, check if they start with data:image
-    if (project.thumbnailUrl.startsWith('data:image')) {
+    if (thumbnailUrl.startsWith('data:image')) {
       setValidThumbnail(true);
       return;
     }
 
     // For URLs, check if they're valid
-    if (isExternalUrl(project.thumbnailUrl)) {
+    if (isExternalUrl(thumbnailUrl)) {
       setValidThumbnail(true);
       return;
     }
 
     // For other cases, assume it's valid but let the error handler catch issues
     setValidThumbnail(true);
-  }, [project.thumbnailUrl]);
+  }, [thumbnailUrl]);
 
   return (
     <motion.div
@@ -60,11 +65,11 @@ const ProjectCard = ({ project, onClick }: ProjectCardProps) => {
               className="absolute inset-0 bg-gradient-to-br from-gray-900 to-gray-700 opacity-100 transition-opacity duration-500"
               style={{ opacity: isLoading ? 1 : 0 }}
             />
-            {isExternalUrl(project.thumbnailUrl) ? (
+            {isExternalUrl(thumbnailUrl) ? (
               // Use regular img tag for external URLs
               <img
-                src={project.thumbnailUrl}
-                alt={project.title}
+                src={thumbnailUrl}
+                alt={title}
                 className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
                 style={{ opacity: isLoading ? 0 : 1 }}
                 onLoad={() => setIsLoading(false)}
@@ -73,8 +78,8 @@ const ProjectCard = ({ project, onClick }: ProjectCardProps) => {
             ) : (
               // Use Next.js Image for internal URLs
               <Image
-                src={project.thumbnailUrl}
-                alt={project.title}
+                src={thumbnailUrl}
+                alt={title}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                 className="object-cover transition-opacity duration-500"
@@ -101,10 +106,10 @@ const ProjectCard = ({ project, onClick }: ProjectCardProps) => {
       {/* Content */}
       <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 z-20">
         <h3 className="text-lg sm:text-xl font-bold text-white mb-1 sm:mb-2 group-hover:text-[#b85a00] transition-colors line-clamp-2">
-          {project.title}
+          {title}
         </h3>
         <p className="text-gray-300 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">
-          {project.description}
+          {description}
         </p>
         <div className="flex items-center justify-between">
           <span className="inline-flex items-center text-[#b85a00] text-xs sm:text-sm font-medium group-hover:translate-x-2 transition-transform">
@@ -114,9 +119,9 @@ const ProjectCard = ({ project, onClick }: ProjectCardProps) => {
             </svg>
           </span>
           
-          {project.url && (
+          {projectUrl && (
             <a 
-              href={project.url} 
+              href={projectUrl} 
               target="_blank" 
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
