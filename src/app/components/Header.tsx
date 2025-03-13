@@ -68,8 +68,8 @@ const Header = () => {
                 priority
                 className={`h-auto object-contain transition-all duration-300 ${
                   scrolled 
-                    ? 'w-[180px] md:w-[220px]' 
-                    : 'w-[200px] md:w-[300px]'
+                    ? 'w-[200px] md:w-[240px]' 
+                    : 'w-[220px] md:w-[340px]'
                 }`} 
               />
             </Link>
