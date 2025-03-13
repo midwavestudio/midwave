@@ -55,22 +55,25 @@ const Header = () => {
       }`}
     >
       <div className="container mx-auto h-full px-4">
-        <div className="flex items-center justify-between h-full">
-          {/* Logo - adjusted for better mobile display */}
-          <Link href="/" className={`flex items-center p-0 transition-all duration-300 ${scrolled ? 'h-16' : 'h-24'}`}>
-            <Image 
-              src="/images/midwave-logo.png" 
-              alt="Midwave Studio Logo" 
-              width={4800} 
-              height={1200} 
-              priority
-              className={`h-auto object-contain transition-all duration-300 ${
-                scrolled 
-                  ? 'w-[180px] md:w-[220px]' 
-                  : 'w-[200px] md:w-[300px]'
-              }`} 
-            />
-          </Link>
+        {/* Modified flex container to ensure logo stays on left */}
+        <div className="flex items-center h-full">
+          {/* Logo - explicitly ensure it's left-aligned */}
+          <div className="flex-1 flex items-start">
+            <Link href="/" className={`flex items-center p-0 transition-all duration-300 ${scrolled ? 'h-16' : 'h-24'}`}>
+              <Image 
+                src="/images/midwave-logo.png" 
+                alt="Midwave Studio Logo" 
+                width={4800} 
+                height={1200} 
+                priority
+                className={`h-auto object-contain transition-all duration-300 ${
+                  scrolled 
+                    ? 'w-[180px] md:w-[220px]' 
+                    : 'w-[200px] md:w-[300px]'
+                }`} 
+              />
+            </Link>
+          </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8 pr-6">
@@ -79,6 +82,7 @@ const Header = () => {
             <NavLink href="/about">About</NavLink>
             <NavLink href="/projects">Projects</NavLink>
             <NavLink href="/contact">Contact</NavLink>
+            <NavLink href="/admin/projects">Admin</NavLink>
           </nav>
 
           {/* Mobile Menu Button - positioned on the right */}
@@ -118,6 +122,7 @@ const Header = () => {
               <MobileNavLink href="/about" onClick={toggleMenu}>About</MobileNavLink>
               <MobileNavLink href="/projects" onClick={toggleMenu}>Projects</MobileNavLink>
               <MobileNavLink href="/contact" onClick={toggleMenu}>Contact</MobileNavLink>
+              <MobileNavLink href="/admin/projects" onClick={toggleMenu}>Admin</MobileNavLink>
             </div>
           </motion.div>
         )}
