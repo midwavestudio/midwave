@@ -2,186 +2,231 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getProjects, Project } from '@/lib/firebase/projectUtils';
-import Header from '../../../../components/Header';
-import Footer from '../../../../components/Footer';
-import BackgroundDesign from '../../../../components/BackgroundDesign';
-import { motion } from 'framer-motion';
-import { FiArrowLeft, FiTrash2, FiAlertTriangle } from 'react-icons/fi';
-import Link from 'next/link';
+import { FiAlertTriangle, FiCheck, FiX } from 'react-icons/fi';
+import AdminLayout from '../../AdminLayout';
+import { Project } from '@/lib/firebase/projectUtils';
 
-export default function DeleteProjectPage({ params }: { params: { id: string } }) {
+interface DeleteProjectPageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default function DeleteProjectPage({ params }: DeleteProjectPageProps) {
   const router = useRouter();
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { id } = params;
+  
   const [project, setProject] = useState<Project | null>(null);
-
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Fetch project data
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        setIsLoading(true);
+        if (typeof window === 'undefined') return;
         
-        // Get all projects
-        const allProjects = await getProjects();
+        // Get data from localStorage
+        const localData = localStorage.getItem('localProjects');
         
-        // Find the specific project by ID
-        const projectToDelete = allProjects.find(p => p.id === params.id);
-        
-        if (projectToDelete) {
-          setProject(projectToDelete);
+        if (localData) {
+          try {
+            const projects = JSON.parse(localData) as Project[];
+            const foundProject = projects.find(p => p.id === id);
+            
+            if (foundProject) {
+              setProject(foundProject);
+            } else {
+              setError('Project not found');
+            }
+          } catch (parseError) {
+            console.error('Error parsing localStorage projects:', parseError);
+            setError('Failed to parse project data');
+          }
         } else {
-          setErrorMessage('Project not found');
+          setError('No projects found');
         }
       } catch (error) {
         console.error('Error fetching project:', error);
-        setErrorMessage(error instanceof Error ? error.message : 'Unknown error');
+        setError('Failed to load project data');
       } finally {
         setIsLoading(false);
       }
     };
-
+    
     fetchProject();
-  }, [params.id]);
-
+  }, [id]);
+  
+  // Handle project deletion
   const handleDelete = async () => {
+    if (!project) return;
+    
     setIsDeleting(true);
-    setErrorMessage(null);
-
+    
     try {
-      // Delete the project from localStorage for now
-      // In a real app, you would delete from Firestore
-      if (typeof window !== 'undefined') {
-        const localProjects = localStorage.getItem('localProjects');
-        if (localProjects) {
-          const projects = JSON.parse(localProjects) as Project[];
-          
-          // Filter out the project to delete
-          const updatedProjects = projects.filter(p => p.id !== params.id);
-          
-          // Save back to localStorage
-          localStorage.setItem('localProjects', JSON.stringify(updatedProjects));
+      if (typeof window === 'undefined') return;
+      
+      // Get data from localStorage
+      const localData = localStorage.getItem('localProjects');
+      
+      if (localData) {
+        let projects: Project[] = [];
+        
+        try {
+          projects = JSON.parse(localData) as Project[];
+        } catch (parseError) {
+          console.error('Error parsing localStorage projects:', parseError);
+          throw new Error('Failed to parse localStorage data');
         }
+        
+        // Remove the project
+        const filteredProjects = projects.filter(p => p.id !== id);
+        
+        // Save back to localStorage
+        localStorage.setItem('localProjects', JSON.stringify(filteredProjects));
+        
+        console.log(`Project "${project.title}" deleted successfully`);
+        
+        // Redirect back to projects page
+        router.push('/admin/projects');
+      } else {
+        throw new Error('No projects found in localStorage');
       }
-
-      // Redirect to admin projects page
-      router.push('/admin/projects');
     } catch (error) {
       console.error('Error deleting project:', error);
-      setErrorMessage(error instanceof Error ? error.message : 'Unknown error occurred');
+      setError(`Failed to delete project: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
       setIsDeleting(false);
     }
   };
-
+  
+  // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <BackgroundDesign />
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#b85a00]"></div>
-      </div>
+      <AdminLayout>
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#b85a00]"></div>
+        </div>
+      </AdminLayout>
     );
   }
-
-  return (
-    <div className="min-h-screen">
-      <BackgroundDesign />
-      <Header />
-      
-      <main className="pt-24 md:pt-32 pb-16 relative z-10">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-4 md:p-6 mb-6"
+  
+  // Error state
+  if (error || !project) {
+    return (
+      <AdminLayout>
+        <div className="p-4 bg-red-900/20 text-red-300 rounded-lg">
+          {error || 'Project not found or failed to load.'}
+        </div>
+        <div className="mt-4">
+          <button
+            onClick={() => router.push('/admin/projects')}
+            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg"
           >
-            <div className="flex justify-between items-center">
-              <h1 className="text-2xl md:text-3xl font-bold text-white">Delete Project</h1>
-              <Link 
-                href="/admin/projects" 
-                className="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 text-white px-3 py-1.5 rounded-lg transition-colors text-sm"
-              >
-                <FiArrowLeft size={16} />
-                <span>Back to Projects</span>
-              </Link>
+            Back to Projects
+          </button>
+        </div>
+      </AdminLayout>
+    );
+  }
+  
+  return (
+    <AdminLayout>
+      <div className="space-y-6">
+        {/* Page Header */}
+        <div>
+          <h1 className="text-2xl font-bold">Delete Project</h1>
+          <p className="text-gray-400">Please confirm that you want to delete this project</p>
+        </div>
+        
+        {/* Confirmation Card */}
+        <div className="bg-red-900/10 border border-red-900/30 rounded-lg p-6">
+          <div className="flex items-start gap-4">
+            <div className="text-red-500">
+              <FiAlertTriangle size={24} />
             </div>
-            <p className="text-gray-400 text-sm md:text-base mt-2">
-              Confirm project deletion
-            </p>
-          </motion.div>
-          
-          {errorMessage && (
-            <div className="bg-red-900/20 text-red-300 p-4 rounded-lg mb-6 text-sm md:text-base">
-              <p>Error: {errorMessage}</p>
-            </div>
-          )}
-          
-          {project ? (
-            <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-4 md:p-6">
-              <div className="flex items-center mb-6 text-amber-300">
-                <FiAlertTriangle size={24} className="mr-3" />
-                <h2 className="text-xl font-semibold">Warning: This action cannot be undone</h2>
-              </div>
+            
+            <div className="flex-1">
+              <h2 className="text-xl font-semibold text-white mb-2">
+                Are you sure you want to delete this project?
+              </h2>
               
-              <div className="mb-6">
-                <p className="text-white mb-4">
-                  Are you sure you want to delete the following project?
-                </p>
-                
-                <div className="bg-gray-800/50 p-4 rounded-lg mb-4">
-                  <h3 className="text-lg font-medium text-white mb-2">{project.title}</h3>
-                  {project.category && (
-                    <p className="text-gray-400 text-sm mb-2">Category: {project.category}</p>
-                  )}
-                  {project.description && (
-                    <p className="text-gray-300 text-sm">{project.description}</p>
-                  )}
-                  {project.featured && (
-                    <div className="mt-2">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#b85a00]/20 text-[#b85a00]">
-                        Featured
-                      </span>
-                    </div>
-                  )}
+              <p className="text-gray-300 mb-4">
+                This action cannot be undone. This will permanently delete the
+                project "{project.title}" and all associated data.
+              </p>
+              
+              {/* Project Details */}
+              <div className="bg-gray-800/50 rounded-lg p-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-400 mb-1">Project Title</h3>
+                    <p className="text-white">{project.title}</p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-400 mb-1">Category</h3>
+                    <p className="text-white">{project.category}</p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-400 mb-1">Featured</h3>
+                    <p className="text-white">{project.featured ? 'Yes' : 'No'}</p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-400 mb-1">Client</h3>
+                    <p className="text-white">{project.client || 'Not specified'}</p>
+                  </div>
                 </div>
                 
-                <p className="text-red-300 text-sm">
-                  Deleting this project will remove it from your portfolio and it cannot be recovered.
-                </p>
+                {project.thumbnailUrl && (
+                  <div className="mt-4">
+                    <h3 className="text-sm font-medium text-gray-400 mb-1">Thumbnail</h3>
+                    <div className="w-32 h-24 overflow-hidden rounded-md">
+                      <img 
+                        src={project.thumbnailUrl} 
+                        alt={project.title} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).onerror = null;
+                          (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x200/2a2a2a/FFFFFF/?text=Error+Loading+Image';
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
               
-              <div className="flex justify-end space-x-4">
-                <Link
-                  href="/admin/projects"
-                  className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                >
-                  Cancel
-                </Link>
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={handleDelete}
                   disabled={isDeleting}
-                  className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg disabled:opacity-50"
                 >
-                  <FiTrash2 size={16} />
-                  <span>{isDeleting ? 'Deleting...' : 'Delete Project'}</span>
+                  {isDeleting ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                  ) : (
+                    <FiCheck size={16} />
+                  )}
+                  <span>Yes, Delete Project</span>
+                </button>
+                
+                <button
+                  onClick={() => router.push('/admin/projects')}
+                  disabled={isDeleting}
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg disabled:opacity-50"
+                >
+                  <FiX size={16} />
+                  <span>Cancel</span>
                 </button>
               </div>
             </div>
-          ) : (
-            <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-4 md:p-6 text-center">
-              <p className="text-gray-400">Project not found or has been deleted.</p>
-              <Link
-                href="/admin/projects"
-                className="mt-4 inline-block px-4 py-2 bg-[#b85a00] text-white rounded-lg hover:bg-[#a04d00] transition-colors"
-              >
-                Back to Projects
-              </Link>
-            </div>
-          )}
+          </div>
         </div>
-      </main>
-      
-      <Footer />
-    </div>
+      </div>
+    </AdminLayout>
   );
 } 
