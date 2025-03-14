@@ -62,13 +62,20 @@ const TypingAnimation = () => {
   }, [displayedText, isDeleting, currentWord, currentWordIndex]);
 
   return (
-    <span className="inline-flex bg-clip-text text-transparent bg-gradient-to-r from-[#b85a00] to-amber-500">
+    <span className="inline-flex items-center bg-clip-text text-transparent bg-gradient-to-r from-[#b85a00] to-amber-500">
       {displayedText}
-      <motion.span 
-        className={`${cursorVisible ? 'opacity-100' : 'opacity-0'} bg-clip-text text-transparent bg-gradient-to-r from-[#b85a00] to-amber-500`}
-        animate={{ opacity: cursorVisible ? 1 : 0 }}
+      <motion.div 
+        className="inline-block h-[1.1em] bg-gradient-to-r from-[#b85a00] to-amber-500"
+        style={{ 
+          width: '2px', 
+          marginLeft: '1px', 
+          marginBottom: '0.1em'
+        }}
+        animate={{ 
+          opacity: cursorVisible ? 1 : 0 
+        }}
         transition={{ duration: 0.2 }}
-      >|</motion.span>
+      />
     </span>
   );
 };
