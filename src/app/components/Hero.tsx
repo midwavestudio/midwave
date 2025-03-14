@@ -85,7 +85,7 @@ const Hero = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
           >
             <span className="block">Redefining Digital</span>
-            <div className="h-[1.2em] inline-flex">
+            <div className="h-[1.2em] inline-flex pl-4 sm:pl-0">
               <TypingAnimation />
             </div>
           </motion.h1>

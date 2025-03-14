@@ -48,61 +48,58 @@ const Header = () => {
 
   return (
     <header 
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out backdrop-blur-sm ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out bg-[#09090b]/80 backdrop-blur-sm shadow-md ${
         scrolled 
-          ? 'h-16 bg-[#09090b]/90 shadow-lg' 
-          : 'h-24 bg-[#09090b]'
+          ? 'h-16' 
+          : 'h-24'
       }`}
     >
-      <div className="container mx-auto h-full px-4">
-        {/* Modified flex container to ensure logo stays on left */}
-        <div className="flex items-center h-full">
-          {/* Logo - explicitly ensure it's left-aligned */}
-          <div className="flex-1 flex items-start justify-start">
-            <Link href="/" className={`flex items-center p-0 transition-all duration-300 ${scrolled ? 'h-16' : 'h-24'}`}>
-              <Image 
-                src="/images/midwave-logo.png" 
-                alt="Midwave Studio Logo" 
-                width={4800} 
-                height={1200} 
-                priority
-                className={`h-auto object-contain transition-all duration-300 ${
-                  scrolled 
-                    ? 'w-[220px] md:w-[240px]' 
-                    : 'w-[240px] md:w-[340px]'
-                }`} 
-              />
-            </Link>
-          </div>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8 pr-6">
-            <NavLink href="/">Home</NavLink>
-            <NavLink href="/services">Services</NavLink>
-            <NavLink href="/about">About</NavLink>
-            <NavLink href="/projects">Projects</NavLink>
-            <NavLink href="/contact">Contact</NavLink>
-          </nav>
-
-          {/* Mobile Menu Button - positioned on the right */}
-          <motion.button 
-            className="md:hidden text-white focus:outline-none w-10 h-10 flex items-center justify-center rounded-full bg-[#0f0f13] border border-[#b85a00]/20"
-            onClick={toggleMenu}
-            aria-label="Toggle navigation menu"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {isMenuOpen ? (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            )}
-          </motion.button>
+      <div className="w-full h-full flex items-center justify-between">
+        {/* Logo - positioned at the far left with no padding */}
+        <div className="flex items-center -ml-2">
+          <Link href="/" className={`flex items-center p-0 transition-all duration-300 ${scrolled ? 'h-16' : 'h-24'}`}>
+            <Image 
+              src="/images/midwave-logo.png" 
+              alt="Midwave Studio Logo" 
+              width={4800} 
+              height={1200} 
+              priority
+              className={`h-auto object-contain transition-all duration-300 ${
+                scrolled 
+                  ? 'w-[180px] md:w-[240px]' 
+                  : 'w-[200px] md:w-[340px]'
+              }`} 
+            />
+          </Link>
         </div>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-8 pr-6">
+          <NavLink href="/">Home</NavLink>
+          <NavLink href="/services">Services</NavLink>
+          <NavLink href="/about">About</NavLink>
+          <NavLink href="/projects">Projects</NavLink>
+          <NavLink href="/contact">Contact</NavLink>
+        </nav>
+
+        {/* Mobile Menu Button - positioned on the right */}
+        <motion.button 
+          className="md:hidden text-white focus:outline-none w-10 h-10 flex items-center justify-center rounded-full bg-[#0f0f13] border border-[#b85a00]/20 mr-4"
+          onClick={toggleMenu}
+          aria-label="Toggle navigation menu"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          {isMenuOpen ? (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          )}
+        </motion.button>
       </div>
 
       {/* Mobile Navigation */}
@@ -115,7 +112,7 @@ const Header = () => {
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="container mx-auto px-4 py-4">
+            <div className="px-4 py-4">
               <MobileNavLink href="/" onClick={toggleMenu}>Home</MobileNavLink>
               <MobileNavLink href="/services" onClick={toggleMenu}>Services</MobileNavLink>
               <MobileNavLink href="/about" onClick={toggleMenu}>About</MobileNavLink>
@@ -164,4 +161,4 @@ const MobileNavLink = ({ href, children, onClick, className = '' }: MobileNavLin
   );
 };
 
-export default Header; 
+export default Header;
