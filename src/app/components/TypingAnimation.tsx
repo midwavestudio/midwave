@@ -75,7 +75,7 @@ const TypingAnimation = () => {
       <motion.div 
         className="inline-block h-[1.1em] bg-gradient-to-r from-[#b85a00] to-amber-500"
         style={{ 
-          width: '2px', 
+          width: '3px',
           marginLeft: isWordComplete ? '0.25em' : '1px', // Add more space when word is complete
           marginBottom: '0.1em'
         }}
