@@ -70,7 +70,7 @@ const TypingAnimation = () => {
   }, [displayedText, isDeleting, currentWord, currentWordIndex]);
 
   return (
-    <span className="inline-flex items-center bg-clip-text text-transparent bg-gradient-to-r from-[#b85a00] to-amber-500">
+    <span className="inline-flex items-center min-w-[200px] bg-clip-text text-transparent bg-gradient-to-r from-[#b85a00] to-amber-500">
       {displayedText}
       <motion.div 
         className="inline-block h-[1.1em] bg-gradient-to-r from-[#b85a00] to-amber-500"

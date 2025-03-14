@@ -84,8 +84,10 @@ const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            Redefining Digital <br className="hidden sm:block" />
-            <TypingAnimation />
+            <span className="block">Redefining Digital</span>
+            <div className="h-[1.2em] inline-flex">
+              <TypingAnimation />
+            </div>
           </motion.h1>
           
           <motion.p 

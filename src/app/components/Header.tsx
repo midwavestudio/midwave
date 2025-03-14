@@ -58,7 +58,7 @@ const Header = () => {
         {/* Modified flex container to ensure logo stays on left */}
         <div className="flex items-center h-full">
           {/* Logo - explicitly ensure it's left-aligned */}
-          <div className="flex-1 flex items-start">
+          <div className="flex-1 flex items-start justify-start">
             <Link href="/" className={`flex items-center p-0 transition-all duration-300 ${scrolled ? 'h-16' : 'h-24'}`}>
               <Image 
                 src="/images/midwave-logo.png" 
@@ -68,8 +68,8 @@ const Header = () => {
                 priority
                 className={`h-auto object-contain transition-all duration-300 ${
                   scrolled 
-                    ? 'w-[200px] md:w-[240px]' 
-                    : 'w-[220px] md:w-[340px]'
+                    ? 'w-[220px] md:w-[240px]' 
+                    : 'w-[240px] md:w-[340px]'
                 }`} 
               />
             </Link>
