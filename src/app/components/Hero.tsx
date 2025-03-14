@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import TypingAnimation from './TypingAnimation';
 
 const Hero = () => {
   return (
@@ -84,7 +85,7 @@ const Hero = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
           >
             Redefining Digital <br className="hidden sm:block" />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#b85a00] to-amber-500">Impact</span>
+            <TypingAnimation />
           </motion.h1>
           
           <motion.p 
