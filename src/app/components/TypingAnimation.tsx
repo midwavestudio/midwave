@@ -10,6 +10,7 @@ const TypingAnimation = () => {
   const [displayedText, setDisplayedText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [cursorVisible, setCursorVisible] = useState(true);
+  const [isWordComplete, setIsWordComplete] = useState(false);
 
   // Current word being typed/deleted
   const currentWord = words[currentWordIndex];
@@ -36,17 +37,20 @@ const TypingAnimation = () => {
     // If we're deleting and text is empty, switch to typing the next word
     if (isDeleting && displayedText === '') {
       setIsDeleting(false);
+      setIsWordComplete(false);
       setCurrentWordIndex((prevIndex) => (prevIndex + 1) % words.length);
       timeout = setTimeout(() => {}, typingSpeed);
     }
     // If we're typing and the text is complete, pause then start deleting
     else if (!isDeleting && displayedText === currentWord) {
+      setIsWordComplete(true);
       timeout = setTimeout(() => {
         setIsDeleting(true);
       }, delayAfterWord);
     }
     // If we're deleting, remove one character
     else if (isDeleting) {
+      setIsWordComplete(false);
       timeout = setTimeout(() => {
         setDisplayedText(currentWord.substring(0, displayedText.length - 1));
       }, deletingSpeed);
@@ -55,6 +59,10 @@ const TypingAnimation = () => {
     else {
       timeout = setTimeout(() => {
         setDisplayedText(currentWord.substring(0, displayedText.length + 1));
+        // Check if word is now complete
+        if (currentWord.substring(0, displayedText.length + 1) === currentWord) {
+          setIsWordComplete(true);
+        }
       }, typingSpeed);
     }
 
@@ -68,7 +76,7 @@ const TypingAnimation = () => {
         className="inline-block h-[1.1em] bg-gradient-to-r from-[#b85a00] to-amber-500"
         style={{ 
           width: '2px', 
-          marginLeft: '1px', 
+          marginLeft: isWordComplete ? '0.25em' : '1px', // Add more space when word is complete
           marginBottom: '0.1em'
         }}
         animate={{ 
