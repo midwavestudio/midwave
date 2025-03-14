@@ -1,6 +1,15 @@
-# Midwave Studio
+# Midwave Studio (v0.2.0 - midwave2 branch)
 
 A modern portfolio website built with Next.js, TypeScript, and Firebase.
+
+## Branch Information
+
+This is the `midwave2` branch, which is an enhanced version of the original Midwave Studio website. This branch includes:
+
+- Improved mobile UI with better logo positioning
+- Fixed typewriter animation
+- Enhanced header transparency
+- Version 0.2.0 updates
 
 ## Features
 
