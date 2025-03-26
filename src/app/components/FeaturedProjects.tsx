@@ -68,9 +68,17 @@ const FeaturedProjects = () => {
 
   // Open project modal
   const handleProjectClick = (project: Project) => {
+    console.log('Project clicked in FeaturedProjects:', project.title);
     setSelectedProject(project);
     setIsModalOpen(true);
+    console.log('Modal should be open now. isModalOpen:', true);
   };
+
+  // Debug modal state changes
+  useEffect(() => {
+    console.log('FeaturedProjects - Modal state changed. isModalOpen:', isModalOpen);
+    console.log('FeaturedProjects - Selected project:', selectedProject?.title);
+  }, [isModalOpen, selectedProject]);
 
   return (
     <section className="py-24 relative z-10">
@@ -158,7 +166,14 @@ const FeaturedProjects = () => {
       <ProjectModal
         project={selectedProject}
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          console.log('FeaturedProjects - Modal closing...');
+          setIsModalOpen(false);
+          // Small delay to ensure state updates properly
+          setTimeout(() => {
+            console.log('FeaturedProjects - Modal closed, checking state:', isModalOpen);
+          }, 100);
+        }}
       />
     </section>
   );

@@ -66,8 +66,8 @@ const Header = () => {
               priority
               className={`h-auto object-contain transition-all duration-300 ${
                 scrolled 
-                  ? 'w-[180px] md:w-[240px]' 
-                  : 'w-[200px] md:w-[340px]'
+                  ? 'w-[180px] md:w-[200px]' 
+                  : 'w-[200px] md:w-[280px]'
               }`} 
             />
           </Link>
@@ -148,14 +148,11 @@ const MobileNavLink = ({ href, children, onClick, className = '' }: MobileNavLin
       transition={{ duration: 0.3 }}
     >
       <Link 
-        href={href} 
-        className={`text-white hover:text-[#b85a00] text-base font-medium transition-all block py-4 border-b border-[#b85a00]/10 flex items-center ${className}`}
+        href={href}
+        className={`block py-2 px-4 text-white hover:text-[#b85a00] transition-colors ${className}`}
         onClick={onClick}
       >
-        <span>{children}</span>
-        <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
+        {children}
       </Link>
     </motion.div>
   );

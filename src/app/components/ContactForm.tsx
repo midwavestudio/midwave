@@ -37,17 +37,33 @@ const ContactForm = () => {
     setError(null);
     
     try {
-      // In a real application, this would send data to Firestore
-      // For now, we'll simulate a successful submission
-      console.log('Form data:', data);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Send the form data to our API endpoint
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          phone: data.phone || '',
+          subject: data.services?.length > 0 
+            ? `Services: ${data.services.join(', ')}` 
+            : 'Contact Form Submission',
+          message: `${data.company ? `Company: ${data.company}\n\n` : ''}${data.message}`
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to send message');
+      }
       
       setIsSubmitted(true);
       reset();
     } catch (err) {
-      setError('There was an error submitting your message. Please try again.');
+      setError(err instanceof Error ? err.message : 'There was an error submitting your message. Please try again.');
       console.error('Error submitting form:', err);
     } finally {
       setIsSubmitting(false);
@@ -68,8 +84,11 @@ const ContactForm = () => {
             </svg>
           </div>
           <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">Message Sent!</h3>
-          <p className="text-gray-300 mb-6 sm:mb-8">
-            Thank you for reaching out. We'll get back to you within 24-48 hours.
+          <p className="text-gray-300 mb-4 sm:mb-6">
+            Thank you for reaching out to Midwave Studio. We've received your message and will get back to you within 24-48 hours.
+          </p>
+          <p className="text-gray-400 mb-6 sm:mb-8">
+            If you need immediate assistance, please call us at (720) 443-2517.
           </p>
           <button
             onClick={() => setIsSubmitted(false)}
@@ -173,8 +192,19 @@ const ContactForm = () => {
           </div>
           
           {error && (
-            <div className="mb-6 p-4 bg-red-500/20 border border-red-500 rounded-md text-red-400 text-sm sm:text-base">
-              {error}
+            <div className="mb-6 p-4 bg-red-500/20 border border-red-500 rounded-md">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-red-400 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <p className="text-red-400 text-sm sm:text-base font-medium">Error sending message:</p>
+                  <p className="text-red-400 text-sm sm:text-base mt-1">{error}</p>
+                  <p className="text-red-300 text-xs sm:text-sm mt-2">
+                    You can also reach us directly at <a href="mailto:info@midwavestudio.com" className="underline hover:text-red-200">info@midwavestudio.com</a> or call us at (720) 443-2517.
+                  </p>
+                </div>
+              </div>
             </div>
           )}
           

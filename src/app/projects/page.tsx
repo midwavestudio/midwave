@@ -44,7 +44,11 @@ export default function Projects() {
 
   // Open project modal
   const handleProjectClick = (project: Project) => {
-    console.log('Project clicked:', project.title);
+    console.log('Project clicked in Projects page:', project.title);
+    console.log('Project images:', project.imageUrls?.length || 0, 'images available');
+    if (project.imageUrls?.length) {
+      console.log('First image URL:', project.imageUrls[0]);
+    }
     setSelectedProject(project);
     setIsModalOpen(true);
     console.log('Modal should be open now. isModalOpen:', true);
@@ -52,8 +56,8 @@ export default function Projects() {
 
   // Debug modal state changes
   useEffect(() => {
-    console.log('Modal state changed. isModalOpen:', isModalOpen);
-    console.log('Selected project:', selectedProject?.title);
+    console.log('Projects page - Modal state changed. isModalOpen:', isModalOpen);
+    console.log('Projects page - Selected project:', selectedProject?.title);
   }, [isModalOpen, selectedProject]);
 
   // Debug projects state changes
@@ -151,8 +155,12 @@ export default function Projects() {
         project={selectedProject}
         isOpen={isModalOpen}
         onClose={() => {
-          console.log('Modal closing...');
+          console.log('Projects page - Modal closing...');
           setIsModalOpen(false);
+          // Small delay to ensure state updates properly
+          setTimeout(() => {
+            console.log('Projects page - Modal closed, checking state:', isModalOpen);
+          }, 100);
         }}
       />
       

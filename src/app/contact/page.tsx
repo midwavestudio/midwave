@@ -30,15 +30,23 @@ export default function Contact() {
     setSubmitStatus(null);
     setErrorMessage('');
 
-    // Simulate form submission
     try {
-      // In a real application, you would send the form data to your backend or a form service
-      console.log('Form submitted:', formData);
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Simulate successful submission
+      // Send the form data to our API endpoint
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send message');
+      }
+
+      // Handle successful submission
       setSubmitStatus('success');
       setFormData({
         name: '',
@@ -50,7 +58,7 @@ export default function Contact() {
     } catch (error) {
       console.error('Error submitting form:', error);
       setSubmitStatus('error');
-      setErrorMessage('There was an error submitting your message. Please try again later.');
+      setErrorMessage(error instanceof Error ? error.message : 'There was an error submitting your message. Please try again later.');
     } finally {
       setIsSubmitting(false);
     }
@@ -88,13 +96,27 @@ export default function Contact() {
               
               {submitStatus === 'success' && (
                 <div className="bg-green-900/20 text-green-300 p-4 rounded-lg mb-6 text-sm md:text-base">
-                  Your message has been sent successfully! We'll get back to you soon.
+                  <div className="flex items-center mb-2">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="font-semibold">Message Sent Successfully!</span>
+                  </div>
+                  <p>Thank you for contacting Midwave Studio. We've received your message and will get back to you as soon as possible, usually within 24-48 hours.</p>
+                  <p className="mt-2">If you need immediate assistance, please call us at (720) 443-2517.</p>
                 </div>
               )}
               
               {submitStatus === 'error' && (
                 <div className="bg-red-900/20 text-red-300 p-4 rounded-lg mb-6 text-sm md:text-base">
-                  {errorMessage}
+                  <div className="flex items-center mb-2">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="font-semibold">Error Sending Message</span>
+                  </div>
+                  <p>{errorMessage}</p>
+                  <p className="mt-2">You can also reach us directly at <a href="mailto:info@midwavestudio.com" className="text-[#b85a00] hover:underline">info@midwavestudio.com</a> or call us at (720) 443-2517.</p>
                 </div>
               )}
               

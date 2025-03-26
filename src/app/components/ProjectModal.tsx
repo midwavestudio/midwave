@@ -37,6 +37,7 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
     setCurrentImageIndex(0);
     setExpandedImage(false);
     resetZoom();
+    console.log('Project changed, reset image index and expanded state');
   }, [project]);
 
   // Reset zoom and pan when expanded image state changes
@@ -152,10 +153,10 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
     [onClose, expandedImage, zoomLevel]
   );
 
-  // Toggle expanded image view
-  const toggleExpandedImage = useCallback(() => {
-    setExpandedImage(prev => !prev);
-  }, []);
+  // Debug expanded image state changes
+  useEffect(() => {
+    console.log('Expanded image state changed:', expandedImage);
+  }, [expandedImage]);
 
   // Function to handle image load and determine dimensions
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -196,6 +197,20 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
 
   const hasValidImage = isValidImage(currentImage);
 
+  // Handle image expansion directly - simplified approach
+  const handleImageExpand = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('handleImageExpand called directly');
+    
+    if (hasValidImage) {
+      console.log('Image is valid, expanding...');
+      setExpandedImage(true);
+    } else {
+      console.log('No valid image to expand');
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -208,13 +223,14 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
         >
           {/* Expanded Image View */}
           <AnimatePresence>
-            {expandedImage && currentImage && (
+            {expandedImage && hasValidImage && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                className="fixed inset-0 z-60 flex items-start justify-center bg-black/90 overflow-auto py-4"
+                className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 overflow-auto py-4"
                 onClick={(e) => {
+                  console.log('Expanded image backdrop clicked');
                   if (zoomLevel > 1) {
                     resetZoom();
                   } else {
@@ -225,100 +241,116 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
                 <div 
                   ref={expandedImageRef}
                   className={`relative ${isDragging ? 'cursor-grabbing' : zoomLevel > 1 ? 'cursor-grab' : 'cursor-zoom-in'}`}
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    console.log('Expanded image container clicked');
+                    e.stopPropagation();
+                    if (zoomLevel === 1) {
+                      zoomIn();
+                    }
+                  }}
                   onMouseDown={handleMouseDown}
                   onMouseMove={handleMouseMove}
                   onMouseUp={handleMouseUp}
                   onMouseLeave={handleMouseUp}
                   style={{
-                    width: '50%',
-                    maxWidth: '800px',
+                    width: '90%',
+                    maxWidth: '1400px',
                     display: 'flex',
                     justifyContent: 'center',
-                    alignItems: 'flex-start',
+                    alignItems: 'center',
                     marginTop: imageDimensions.isVertical ? '20px' : 'auto'
                   }}
                 >
-                  {hasValidImage ? (
-                    <div 
-                      className="relative"
-                      style={{ 
-                        transform: `scale(${zoomLevel}) translate(${panPosition.x / zoomLevel}px, ${panPosition.y / zoomLevel}px)`,
-                        transformOrigin: 'top center',
-                        transition: isDragging ? 'none' : 'transform 0.2s ease-out',
-                        width: '100%',
-                        height: imageDimensions.isVertical 
-                          ? (imageDimensions.aspectRatio > 0 ? `${50 / imageDimensions.aspectRatio}vw` : 'auto')
-                          : 'auto',
-                        maxHeight: imageDimensions.isVertical ? 'none' : '80vh',
-                        display: 'flex',
-                        justifyContent: 'center'
-                      }}
-                    >
-                      {isExternalUrl(currentImage) ? (
-                        <img
-                          src={currentImage}
-                          alt={`${project.title} - Expanded View`}
-                          className="w-full h-auto object-contain"
-                          draggable="false"
-                          onLoad={handleImageLoad}
-                          onError={(e) => {
-                            // Hide the image on error
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            // Show fallback
-                            const parent = target.parentElement;
-                            if (parent) {
-                              parent.classList.add('flex', 'items-center', 'justify-center', 'bg-[#0f0f13]');
-                              const fallback = document.createElement('div');
-                              fallback.innerHTML = `
-                                <svg class="w-16 h-16 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                                <p class="text-gray-500 mt-2">Image not available</p>
-                              `;
-                              parent.appendChild(fallback);
-                            }
-                          }}
-                        />
-                      ) : (
-                        <Image
-                          src={currentImage}
-                          alt={`${project.title} - Expanded View`}
-                          fill
-                          className="object-cover hover:scale-105 transition-transform duration-300"
-                          onError={(e) => {
-                            // Hide the image on error
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            // Show fallback
-                            const parent = target.parentElement;
-                            if (parent) {
-                              parent.classList.add('flex', 'items-center', 'justify-center', 'bg-[#0f0f13]');
-                              const fallback = document.createElement('div');
-                              fallback.innerHTML = `
-                                <svg class="w-16 h-16 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                                <p class="text-gray-500 mt-2">Image not available</p>
-                              `;
-                              parent.appendChild(fallback);
-                            }
-                          }}
-                        />
-                      )}
-                    </div>
-                  ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0f0f13]">
-                      <svg className="w-16 h-16 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <p className="text-gray-500 mt-2">No image available</p>
-                    </div>
-                  )}
+                  <div 
+                    className="relative"
+                    style={{ 
+                      transform: `scale(${zoomLevel}) translate(${panPosition.x / zoomLevel}px, ${panPosition.y / zoomLevel}px)`,
+                      transformOrigin: 'center center',
+                      transition: isDragging ? 'none' : 'transform 0.2s ease-out',
+                      width: '100%',
+                      height: 'auto',
+                      maxHeight: '85vh',
+                      display: 'flex',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    {isExternalUrl(currentImage) ? (
+                      <img
+                        src={currentImage}
+                        alt={`${project.title} - Expanded View`}
+                        className="max-w-full max-h-[85vh] object-contain"
+                        draggable="false"
+                        onLoad={handleImageLoad}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log('Expanded image clicked directly');
+                          if (zoomLevel === 1) {
+                            zoomIn();
+                          } else {
+                            resetZoom();
+                          }
+                        }}
+                        onError={(e) => {
+                          console.error('Error loading expanded image:', currentImage);
+                          // Hide the image on error
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          // Show fallback
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.classList.add('flex', 'items-center', 'justify-center', 'bg-[#0f0f13]');
+                            const fallback = document.createElement('div');
+                            fallback.innerHTML = `
+                              <svg class="w-16 h-16 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                              </svg>
+                              <p class="text-gray-500 mt-2">Image not available</p>
+                            `;
+                            parent.appendChild(fallback);
+                          }
+                        }}
+                      />
+                    ) : (
+                      <img
+                        src={currentImage}
+                        alt={`${project.title} - Expanded View`}
+                        className="max-w-full max-h-[85vh] object-contain"
+                        draggable="false"
+                        onLoad={handleImageLoad}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log('Expanded image clicked directly');
+                          if (zoomLevel === 1) {
+                            zoomIn();
+                          } else {
+                            resetZoom();
+                          }
+                        }}
+                        onError={(e) => {
+                          console.error('Error loading expanded image:', currentImage);
+                          // Hide the image on error
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          // Show fallback
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.classList.add('flex', 'items-center', 'justify-center', 'bg-[#0f0f13]');
+                            const fallback = document.createElement('div');
+                            fallback.innerHTML = `
+                              <svg class="w-16 h-16 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                              </svg>
+                              <p class="text-gray-500 mt-2">Image not available</p>
+                            `;
+                            parent.appendChild(fallback);
+                          }
+                        }}
+                      />
+                    )}
+                  </div>
 
                   {/* Zoom controls */}
-                  <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 bg-black/50 rounded-full p-2 z-10">
+                  <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 bg-black/70 rounded-full p-2 z-10">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -364,9 +396,10 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
+                      console.log('Close expanded view button clicked');
                       setExpandedImage(false);
                     }}
-                    className="fixed top-4 right-4 bg-black/50 rounded-full p-2 text-white hover:bg-black/70 transition-colors z-10"
+                    className="fixed top-4 right-4 bg-black/70 rounded-full p-3 text-white hover:bg-black/90 transition-colors z-10"
                     aria-label="Close expanded view"
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -375,11 +408,11 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
                   </button>
 
                   {/* Updated Zoom instructions */}
-                  <div className="fixed top-4 left-4 bg-black/50 rounded-lg p-2 text-white text-xs z-10">
-                    <p>Use + and - buttons to zoom</p>
-                    <p>Drag to pan when zoomed in</p>
-                    <p>Press + or - keys to zoom</p>
-                    <p>Press 0 to reset zoom</p>
+                  <div className="fixed top-4 left-4 bg-black/70 rounded-lg p-3 text-white text-xs z-10">
+                    <p className="mb-1">• Click image to zoom in</p>
+                    <p className="mb-1">• Use + and - buttons to zoom</p>
+                    <p className="mb-1">• Drag to pan when zoomed in</p>
+                    <p>• Press ESC to close</p>
                   </div>
                 </div>
               </motion.div>
@@ -413,8 +446,16 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
                 {/* Image Gallery */}
                 <div className="relative">
                   <div 
-                    className="relative aspect-video bg-gray-800 rounded-lg overflow-hidden cursor-pointer"
-                    onClick={hasValidImage ? toggleExpandedImage : undefined}
+                    className="relative aspect-video bg-gray-800 rounded-lg overflow-hidden cursor-zoom-in"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('Image container clicked directly');
+                      if (hasValidImage) {
+                        setExpandedImage(true);
+                      }
+                    }}
+                    title={hasValidImage ? "Click to expand image" : "No image available"}
                   >
                     {hasValidImage ? (
                       isExternalUrl(currentImage) ? (
@@ -423,7 +464,17 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
                           src={currentImage}
                           alt={`${project.title} - Image ${currentImageIndex + 1}`}
                           className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            console.log('Expanded image clicked directly');
+                            if (zoomLevel === 1) {
+                              zoomIn();
+                            } else {
+                              resetZoom();
+                            }
+                          }}
                           onError={(e) => {
+                            console.error('Error loading expanded external image:', currentImage);
                             // Hide the image on error
                             const target = e.target as HTMLImageElement;
                             target.style.display = 'none';
@@ -444,30 +495,43 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
                         />
                       ) : (
                         // Use Next.js Image for internal URLs and local paths
-                        <Image
-                          src={currentImage}
-                          alt={`${project.title} - Image ${currentImageIndex + 1}`}
-                          fill
-                          className="object-cover hover:scale-105 transition-transform duration-300"
-                          onError={(e) => {
-                            // Hide the image on error
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            // Show fallback
-                            const parent = target.parentElement;
-                            if (parent) {
-                              parent.classList.add('flex', 'items-center', 'justify-center', 'bg-[#0f0f13]');
-                              const fallback = document.createElement('div');
-                              fallback.innerHTML = `
-                                <svg class="w-16 h-16 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                                <p class="text-gray-500 mt-2">Image not available</p>
-                              `;
-                              parent.appendChild(fallback);
+                        <div 
+                          className="absolute inset-0 w-full h-full"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log('Image container clicked directly');
+                            if (hasValidImage) {
+                              setExpandedImage(true);
                             }
                           }}
-                        />
+                        >
+                          <Image
+                            src={currentImage}
+                            alt={`${project.title} - Image ${currentImageIndex + 1}`}
+                            fill
+                            className="object-cover hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              console.error('Error loading expanded Next.js image:', currentImage);
+                              // Hide the image on error
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              // Show fallback
+                              const parent = target.parentElement;
+                              if (parent) {
+                                parent.classList.add('flex', 'items-center', 'justify-center', 'bg-[#0f0f13]');
+                                const fallback = document.createElement('div');
+                                fallback.innerHTML = `
+                                  <svg class="w-16 h-16 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                  </svg>
+                                  <p class="text-gray-500 mt-2">Image not available</p>
+                                `;
+                                parent.appendChild(fallback);
+                              }
+                            }}
+                          />
+                        </div>
                       )
                     ) : (
                       <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0f0f13]">
@@ -478,17 +542,46 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
                       </div>
                     )}
                     
-                    {/* Click to expand indicator - only show if there's a valid image */}
+                    {/* Click to expand indicator - make it more visible */}
                     {hasValidImage && (
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300 bg-black/30">
-                        <div className="bg-black/50 rounded-full p-3">
+                      <div 
+                        className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300 bg-black/30"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Expand button clicked directly');
+                          setExpandedImage(true);
+                        }}
+                      >
+                        <div className="bg-black/70 rounded-full p-3 transform transition-transform duration-300 hover:scale-110">
                           <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
                           </svg>
                         </div>
+                        <span className="absolute bottom-4 text-white bg-black/50 px-3 py-1 rounded-full text-sm">
+                          Click to expand
+                        </span>
                       </div>
                     )}
                   </div>
+
+                  {/* Add a clear call-to-action button for expanding the image */}
+                  {hasValidImage && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Expand button clicked directly');
+                        setExpandedImage(true);
+                      }}
+                      className="mt-4 w-full py-2 bg-[#b85a00]/20 hover:bg-[#b85a00]/40 text-white rounded flex items-center justify-center transition-colors"
+                    >
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                      </svg>
+                      Expand Image
+                    </button>
+                  )}
 
                   {/* Image Navigation - only show if there are multiple valid images */}
                   {project.imageUrls && project.imageUrls.filter(url => isValidImage(url)).length > 1 && (

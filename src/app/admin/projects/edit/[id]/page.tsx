@@ -36,6 +36,7 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [imagesPreviews, setImagesPreviews] = useState<string[]>([]);
+  const [imageUrlInput, setImageUrlInput] = useState('');
   
   const thumbnailFileRef = useRef<HTMLInputElement>(null);
   const imageFileRef = useRef<HTMLInputElement>(null);
@@ -46,22 +47,55 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
       try {
         if (typeof window === 'undefined') return;
         
-        // Get data from localStorage
-        const localData = localStorage.getItem('localProjects');
+        console.log('Fetching project with ID:', id);
+        
+        // First try to get the project from localStorage
         let project = null;
+        const localData = localStorage.getItem('localProjects');
         
         if (localData) {
           try {
             const projects = JSON.parse(localData) as Project[];
             project = projects.find(p => p.id === id);
+            console.log('LocalStorage search result:', project ? 'Found' : 'Not found');
           } catch (error) {
             console.error('Error parsing localStorage projects:', error);
-            setErrors(prev => ({ ...prev, fetch: 'Failed to parse project data' }));
+          }
+        }
+        
+        // If not found in localStorage, try to get from Firestore
+        if (!project) {
+          try {
+            // Import Firebase modules dynamically
+            const { doc, getDoc } = await import('firebase/firestore');
+            const { db, ensureFirebaseInitialized } = await import('@/lib/firebase/firebase');
+            
+            // Ensure Firebase is initialized
+            await ensureFirebaseInitialized();
+            
+            // Get from Firestore
+            const docRef = doc(db, 'projects', id);
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+              const projectData = docSnap.data() as Omit<Project, 'id'>;
+              project = {
+                id: docSnap.id,
+                ...projectData
+              } as Project;
+              console.log('Firestore search result:', 'Found');
+            } else {
+              console.log('Project not found in Firestore');
+            }
+          } catch (firestoreError) {
+            console.error('Error fetching from Firestore:', firestoreError);
           }
         }
         
         if (!project) {
-          setErrors(prev => ({ ...prev, fetch: 'Project not found' }));
+          console.error('Project not found in any data source');
+          setErrors(prev => ({ ...prev, fetch: 'Project not found. It may have been deleted or is not accessible.' }));
+          setIsLoading(false);
           return;
         }
         
@@ -82,7 +116,7 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
         console.log('Project loaded successfully:', project.title);
       } catch (error) {
         console.error('Error fetching project:', error);
-        setErrors(prev => ({ ...prev, fetch: 'Failed to load project data' }));
+        setErrors(prev => ({ ...prev, fetch: 'Failed to load project data. Please try again.' }));
       } finally {
         setIsLoading(false);
       }
@@ -101,6 +135,16 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => prev ? { ...prev, [name]: checked } : null);
+      return;
+    }
+    
+    // Handle thumbnailUrl changes
+    if (name === 'thumbnailUrl' && value) {
+      // Update the form data
+      setFormData(prev => prev ? { ...prev, [name]: value } : null);
+      
+      // Don't automatically update the preview - let the user click the preview button
+      // This prevents loading errors for invalid URLs
       return;
     }
     
@@ -239,6 +283,43 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
     });
   };
   
+  // Add image by URL
+  const addImageByUrl = () => {
+    if (!formData || !imageUrlInput.trim()) return;
+    
+    const imageUrl = imageUrlInput.trim();
+    
+    // Validate URL format
+    try {
+      new URL(imageUrl);
+    } catch (error) {
+      setErrors(prev => ({ ...prev, imageUrls: 'Please enter a valid URL' }));
+      return;
+    }
+    
+    // Update form data with new image URL
+    setFormData(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        imageUrls: [...(prev.imageUrls || []), imageUrl]
+      };
+    });
+    
+    // Update image previews
+    setImagesPreviews(prev => [...prev, imageUrl]);
+    
+    // Clear input and any errors
+    setImageUrlInput('');
+    if (errors.imageUrls) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.imageUrls;
+        return newErrors;
+      });
+    }
+  };
+  
   // Validate form before submission
   const validateForm = (): boolean => {
     if (!formData) return false;
@@ -301,12 +382,28 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
       const updatedProject: Project = {
         ...formData,
         featured,
-        order: Number(formData.order) || 0
+        order: Number(formData.order) || 0,
+        updatedAt: new Date().toISOString()
       };
       
       console.log('Updating project:', updatedProject.title, '| Featured:', featured);
       
-      // Store the project in localStorage
+      // Try to update using firebaseUtils first
+      try {
+        const { updateDocument } = await import('@/lib/firebase/firebaseUtils');
+        const result = await updateDocument('projects', id, updatedProject);
+        
+        console.log('Project updated successfully using updateDocument:', result);
+        
+        // Redirect back to projects page
+        router.push('/admin/projects');
+        return;
+      } catch (firebaseError) {
+        console.error('Error updating project with updateDocument:', firebaseError);
+        // Continue to localStorage fallback
+      }
+      
+      // Fallback to localStorage if updateDocument fails
       if (typeof window !== 'undefined') {
         try {
           // Get existing projects
@@ -316,8 +413,8 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
           if (existingData) {
             try {
               projects = JSON.parse(existingData);
-            } catch (error) {
-              console.error('Error parsing localStorage projects:', error);
+            } catch (parseError) {
+              console.error('Error parsing localStorage projects:', parseError);
               throw new Error('Failed to parse localStorage data');
             }
           }
@@ -344,7 +441,7 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
             throw new Error('Failed to verify project was saved');
           }
           
-          console.log('Project updated successfully:', id);
+          console.log('Project updated successfully in localStorage:', id);
           
           // Redirect back to projects page
           router.push('/admin/projects');
@@ -352,7 +449,7 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
           console.error('Error saving project to localStorage:', error);
           setErrors(prev => ({ 
             ...prev, 
-            submit: 'Failed to update project. Please try again.' 
+            submit: 'Failed to update project in localStorage. Please try again.' 
           }));
         }
       }
@@ -370,8 +467,9 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
   if (isLoading) {
     return (
       <AdminLayout>
-        <div className="flex justify-center py-12">
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#b85a00]"></div>
+          <p className="text-gray-400">Loading project data...</p>
         </div>
       </AdminLayout>
     );
@@ -380,16 +478,23 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
   if (!formData) {
     return (
       <AdminLayout>
-        <div className="p-4 bg-red-900/20 text-red-300 rounded-lg">
-          {errors.fetch || 'Project not found or failed to load.'}
-        </div>
-        <div className="mt-4">
-          <button
-            onClick={() => router.push('/admin/projects')}
-            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg"
-          >
-            Back to Projects
-          </button>
+        <div className="p-6 bg-red-900/20 text-red-300 rounded-lg">
+          <h2 className="text-xl font-bold mb-2">Error</h2>
+          <p>{errors.fetch}</p>
+          <div className="mt-4 flex gap-3">
+            <button 
+              onClick={() => router.push('/admin/projects')}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg"
+            >
+              Back to Projects
+            </button>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-red-800 hover:bg-red-700 text-white rounded-lg"
+            >
+              Try Again
+            </button>
+          </div>
         </div>
       </AdminLayout>
     );
@@ -398,11 +503,13 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Page Header */}
-        <div className="flex justify-between items-center">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold">Edit Project</h1>
-            <p className="text-gray-400">Update project details</p>
+            <h1 className="text-2xl font-bold mb-1">
+              {formData ? `Edit Project: ${formData.title}` : 'Edit Project'}
+            </h1>
+            <p className="text-gray-400">Update project details and media</p>
           </div>
           
           <div className="flex gap-2">
@@ -431,7 +538,7 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
           </div>
         </div>
         
-        {/* Error Message */}
+        {/* Error message for project not found */}
         {errors.submit && (
           <div className="p-4 bg-red-900/20 text-red-300 rounded-lg">
             {errors.submit}
@@ -439,7 +546,7 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
         )}
         
         {/* Form */}
-        <form id="project-form" onSubmit={handleSubmit} className="space-y-6">
+        <form id="project-form" onSubmit={handleSubmit} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left Column - Project Details */}
             <div className="space-y-6">
@@ -730,26 +837,61 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
                         )}
                       </div>
                       
-                      <div className="flex-1">
-                        <input 
-                          type="file"
-                          ref={thumbnailFileRef}
-                          onChange={handleThumbnailUpload}
-                          accept="image/*"
-                          className="hidden"
-                        />
+                      <div className="flex-1 space-y-3">
+                        {/* File upload option */}
+                        <div>
+                          <input 
+                            type="file"
+                            ref={thumbnailFileRef}
+                            onChange={handleThumbnailUpload}
+                            accept="image/*"
+                            className="hidden"
+                          />
+                          
+                          <button
+                            type="button"
+                            onClick={() => thumbnailFileRef.current?.click()}
+                            className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md"
+                          >
+                            Select Thumbnail
+                          </button>
+                          
+                          <p className="mt-1 text-xs text-gray-400">
+                            Recommended size: 800x600px. Max size: 2MB
+                          </p>
+                        </div>
                         
-                        <button
-                          type="button"
-                          onClick={() => thumbnailFileRef.current?.click()}
-                          className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md"
-                        >
-                          Select Thumbnail
-                        </button>
-                        
-                        <p className="mt-1 text-xs text-gray-400">
-                          Recommended size: 800x600px. Max size: 2MB
-                        </p>
+                        {/* URL input option */}
+                        <div>
+                          <label htmlFor="thumbnailUrl" className="block text-sm font-medium text-gray-300 mb-1">
+                            Or enter image URL
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              type="url"
+                              id="thumbnailUrl"
+                              name="thumbnailUrl"
+                              value={formData.thumbnailUrl || ''}
+                              onChange={handleChange}
+                              className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]/50"
+                              placeholder="https://example.com/image.jpg"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (formData.thumbnailUrl) {
+                                  setThumbnailPreview(formData.thumbnailUrl);
+                                }
+                              }}
+                              className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md"
+                            >
+                              Preview
+                            </button>
+                          </div>
+                          <p className="mt-1 text-xs text-gray-400">
+                            Direct link to an image (JPG, PNG, WebP)
+                          </p>
+                        </div>
                         
                         {errors.thumbnailUrl && (
                           <p className="mt-1 text-sm text-red-500">{errors.thumbnailUrl}</p>
@@ -763,27 +905,58 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
                     <label className="block text-sm font-medium text-gray-300 mb-1">
                       Project Images
                     </label>
-                    <div className="mt-1">
-                      <input 
-                        type="file"
-                        ref={imageFileRef}
-                        onChange={handleImagesUpload}
-                        accept="image/*"
-                        multiple
-                        className="hidden"
-                      />
+                    <div className="mt-1 space-y-3">
+                      {/* File upload option */}
+                      <div>
+                        <input 
+                          type="file"
+                          ref={imageFileRef}
+                          onChange={handleImagesUpload}
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                        />
+                        
+                        <button
+                          type="button"
+                          onClick={() => imageFileRef.current?.click()}
+                          className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md"
+                        >
+                          Add Images
+                        </button>
+                        
+                        <p className="mt-1 text-xs text-gray-400">
+                          Recommended size: 1200x800px. Max size: 5MB per image
+                        </p>
+                      </div>
                       
-                      <button
-                        type="button"
-                        onClick={() => imageFileRef.current?.click()}
-                        className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md"
-                      >
-                        Add Images
-                      </button>
-                      
-                      <p className="mt-1 text-xs text-gray-400">
-                        Recommended size: 1200x800px. Max size: 5MB per image
-                      </p>
+                      {/* URL input option */}
+                      <div>
+                        <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-300 mb-1">
+                          Or add image by URL
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="url"
+                            id="imageUrl"
+                            value={imageUrlInput}
+                            onChange={(e) => setImageUrlInput(e.target.value)}
+                            className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]/50"
+                            placeholder="https://example.com/image.jpg"
+                            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addImageByUrl())}
+                          />
+                          <button
+                            type="button"
+                            onClick={addImageByUrl}
+                            className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md"
+                          >
+                            Add
+                          </button>
+                        </div>
+                        <p className="mt-1 text-xs text-gray-400">
+                          Direct link to an image (JPG, PNG, WebP)
+                        </p>
+                      </div>
                       
                       {errors.imageUrls && (
                         <p className="mt-1 text-sm text-red-500">{errors.imageUrls}</p>

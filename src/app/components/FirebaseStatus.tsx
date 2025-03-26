@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { auth, db, storage } from '@/lib/firebase/firebase';
+import { auth, db } from '@/lib/firebase/firebase';
 
 const FirebaseStatus = () => {
   const [status, setStatus] = useState<'checking' | 'initialized' | 'error'>('checking');
@@ -23,9 +23,8 @@ const FirebaseStatus = () => {
       // Simple check if Firebase objects exist and have properties
       const authInitialized = auth && typeof auth === 'object' && Object.keys(auth).length > 0;
       const dbInitialized = db && typeof db === 'object' && Object.keys(db).length > 0;
-      const storageInitialized = storage && typeof storage === 'object' && Object.keys(storage).length > 0;
       
-      if (authInitialized && dbInitialized && storageInitialized) {
+      if (authInitialized && dbInitialized) {
         setStatus('initialized');
         setDetails('Firebase is properly initialized');
       } else {

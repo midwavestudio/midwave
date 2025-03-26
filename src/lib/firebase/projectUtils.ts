@@ -370,85 +370,107 @@ const getDefaultFeaturedProjects = (): Project[] => {
 };
 
 /**
- * Creates a test featured project in localStorage
- * This function only works in development mode
- * @returns The created test project or null if creation failed
+ * Creates a test featured project for development and testing
+ * @returns The created project or null if creation failed
  */
-export const createTestFeaturedProject = (): Project | null => {
+export const createTestFeaturedProject = async (): Promise<{success: boolean, message?: string, project?: Project}> => {
   try {
-    // Only allow in development mode
-    if (process.env.NODE_ENV === 'production') {
+    // Only allow in development mode or if explicitly allowed
+    if (process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_ALLOW_TEST_PROJECTS !== 'true') {
       console.error('Test projects cannot be created in production mode');
-      return null;
+      return { success: false, message: 'Test projects cannot be created in production mode' };
     }
     
     // Check if running on client
     if (typeof window === 'undefined') {
       console.error('Cannot create test project on server - no localStorage available');
-      return null;
+      return { success: false, message: 'Cannot create test project on server' };
     }
     
     console.log('Creating test featured project...');
     
-    // Get existing projects from localStorage
-    let projects: Project[] = [];
-    try {
-      const existingProjects = localStorage.getItem('localProjects');
-      projects = existingProjects ? JSON.parse(existingProjects) : [];
-      console.log(`Found ${projects.length} existing projects in localStorage`);
-    } catch (parseError) {
-      console.error('Error parsing existing projects:', parseError);
-      projects = [];
-    }
-    
-    // Create a unique ID for the test project
-    const id = `test-${Date.now()}`;
+    // Create a unique slug for the test project
+    const timestamp = Date.now();
+    const randomNum = Math.floor(Math.random() * 1000);
+    const title = `Test Project ${randomNum}`;
+    const slug = `test-project-${randomNum}-${timestamp}`;
     
     // Create test project images
     const imageUrls = createPlaceholderImages(5);
     
-    // Create the test project with featured flag as a boolean
-    const testProject: Project = {
-      id,
-      title: `Test Project ${Math.floor(Math.random() * 1000)}`,
+    // Create the test project data
+    const testProjectData = {
+      title,
       description: 'This is a test project created for debugging purposes.',
+      fullDescription: 'This is a detailed description of the test project. It includes multiple paragraphs of text to demonstrate how the full description field works.\n\nThis project was automatically generated for testing purposes.',
       category: 'Test',
       thumbnailUrl: PLACEHOLDER_IMAGES.THUMBNAIL,
       imageUrls,
-      featured: true, // Explicitly set as boolean true
-      createdAt: new Date().toISOString(),
-      slug: `test-project-${Date.now()}`,
+      featured: true,
+      slug,
+      client: 'Test Client',
+      date: new Date().toISOString().split('T')[0],
+      services: ['Testing', 'Development', 'Debugging'],
+      technologies: ['React', 'Next.js', 'Firebase'],
+      url: 'https://example.com',
+      order: 0
     };
     
-    // Add the test project to localStorage
-    projects.push(testProject);
-    
     try {
-      localStorage.setItem('localProjects', JSON.stringify(projects));
-      
-      // Verify that the project was saved correctly
-      const updatedProjects = localStorage.getItem('localProjects');
-      const parsedProjects = updatedProjects ? JSON.parse(updatedProjects) : [];
-      const totalProjects = parsedProjects.length;
-      const featuredProjects = parsedProjects.filter((p: Project) => 
-        p.featured === true || 
-        p.featured === 'true' || 
-        p.featured === 1 || 
-        p.featured === '1'
-      ).length;
-      
-      console.log(`Test project saved. Total projects: ${totalProjects}, Featured projects: ${featuredProjects}`);
-      console.log(`Test project created with ID: ${id} and title: ${testProject.title}`);
-      
-      return testProject;
+      // Try to use the addDocument function from firebaseUtils
+      try {
+        const { addDocument } = await import('./firebaseUtils');
+        const result = await addDocument('projects', testProjectData);
+        console.log('Test project created successfully using addDocument:', result);
+        return { 
+          success: true, 
+          message: 'Test project created successfully', 
+          project: result as Project 
+        };
+      } catch (addDocError) {
+        console.error('Error using addDocument, falling back to localStorage:', addDocError);
+        
+        // Fallback to direct localStorage manipulation
+        // Get existing projects from localStorage
+        let projects: Project[] = [];
+        const existingProjects = localStorage.getItem('localProjects');
+        projects = existingProjects ? JSON.parse(existingProjects) : [];
+        
+        // Create a unique ID for the test project
+        const id = `test-${timestamp}`;
+        
+        // Create the complete test project object
+        const testProject: Project = {
+          id,
+          ...testProjectData,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        
+        // Add the test project to localStorage
+        projects.push(testProject);
+        localStorage.setItem('localProjects', JSON.stringify(projects));
+        
+        console.log(`Test project created with ID: ${id} and title: ${testProject.title}`);
+        return { 
+          success: true, 
+          message: 'Test project created successfully (localStorage fallback)', 
+          project: testProject 
+        };
+      }
     } catch (storageError) {
       console.error('Error saving to localStorage:', storageError);
-      alert('Failed to save test project. You may be in private/incognito mode or localStorage may be disabled.');
-      return null;
+      return { 
+        success: false, 
+        message: 'Failed to save test project. You may be in private/incognito mode or localStorage may be disabled.' 
+      };
     }
   } catch (error) {
     console.error('Error creating test project:', error);
-    return null;
+    return { 
+      success: false, 
+      message: 'An unexpected error occurred while creating the test project' 
+    };
   }
 };
 

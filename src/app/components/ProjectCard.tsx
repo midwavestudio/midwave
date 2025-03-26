@@ -56,6 +56,7 @@ const ProjectCard = ({ project, onClick }: ProjectCardProps) => {
       whileHover={{ y: -5 }}
       transition={{ duration: 0.3 }}
       onClick={onClick}
+      title="Click to view project details"
     >
       {/* Project Image */}
       <div className="absolute inset-0 z-0 bg-gradient-to-br h-full w-full">
@@ -70,7 +71,7 @@ const ProjectCard = ({ project, onClick }: ProjectCardProps) => {
               <img
                 src={thumbnailUrl}
                 alt={title}
-                className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
+                className="absolute inset-0 w-full h-full object-cover transition-all duration-500 group-hover:scale-110"
                 style={{ opacity: isLoading ? 0 : 1 }}
                 onLoad={() => setIsLoading(false)}
                 onError={() => setImageError(true)}
@@ -82,7 +83,7 @@ const ProjectCard = ({ project, onClick }: ProjectCardProps) => {
                 alt={title}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-                className="object-cover transition-opacity duration-500"
+                className="object-cover transition-all duration-500 group-hover:scale-110"
                 style={{ opacity: isLoading ? 0 : 1 }}
                 onLoadingComplete={() => setIsLoading(false)}
                 onError={() => setImageError(true)}
@@ -101,7 +102,16 @@ const ProjectCard = ({ project, onClick }: ProjectCardProps) => {
       </div>
 
       {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent z-10 opacity-80 group-hover:opacity-90 transition-opacity duration-300" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent z-10 opacity-80 group-hover:opacity-70 transition-opacity duration-300" />
+
+      {/* Expand indicator */}
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="bg-black/70 rounded-full p-3 transform transition-transform duration-300 group-hover:scale-110">
+          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+          </svg>
+        </div>
+      </div>
 
       {/* Content */}
       <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 z-20">

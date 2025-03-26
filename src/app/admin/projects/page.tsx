@@ -11,11 +11,37 @@ export default function ProjectsAdminPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [firebaseInitialized, setFirebaseInitialized] = useState<boolean | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
-  // Load projects on component mount
+  // Load projects on component mount or when refresh is triggered
   useEffect(() => {
-    loadProjects();
-  }, []);
+    const initializeAndLoad = async () => {
+      try {
+        // First, ensure Firebase is initialized
+        const { ensureFirebaseInitialized } = await import('@/lib/firebase/firebase');
+        const result = await ensureFirebaseInitialized();
+        
+        console.log('Firebase initialization check result:', result);
+        setFirebaseInitialized(result);
+        
+        // Then load projects
+        await loadProjects();
+      } catch (error) {
+        console.error('Error during initialization:', error);
+        setErrorMessage('Failed to initialize the application. Please try refreshing the page.');
+        setIsLoading(false);
+      }
+    };
+    
+    initializeAndLoad();
+  }, [lastRefresh]);
+
+  // Function to manually refresh projects
+  const refreshProjects = () => {
+    setIsLoading(true);
+    setLastRefresh(new Date());
+  };
 
   // Function to load projects from firestore/localStorage
   const loadProjects = async () => {
@@ -23,6 +49,7 @@ export default function ProjectsAdminPage() {
       setIsLoading(true);
       setErrorMessage(null);
       
+      console.log('Starting to load projects...');
       const allProjects = await getProjects();
       console.log(`Loaded ${allProjects.length} projects`);
       
@@ -101,8 +128,31 @@ export default function ProjectsAdminPage() {
               <FiPlus size={16} />
               <span>Test Project</span>
             </button>
+            
+            <button 
+              onClick={refreshProjects}
+              disabled={isLoading}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg disabled:opacity-50"
+            >
+              {isLoading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              )}
+              <span>Refresh</span>
+            </button>
           </div>
         </div>
+        
+        {/* Firebase Status */}
+        {firebaseInitialized === false && (
+          <div className="p-4 bg-yellow-900/20 text-yellow-300 rounded-lg">
+            <p className="font-medium">Firebase is not initialized</p>
+            <p className="text-sm mt-1">Projects will be stored in your browser's localStorage instead.</p>
+          </div>
+        )}
         
         {/* Error and Success Messages */}
         {errorMessage && (
@@ -119,8 +169,9 @@ export default function ProjectsAdminPage() {
         
         {/* Projects List */}
         {isLoading ? (
-          <div className="flex justify-center py-12">
+          <div className="flex flex-col items-center justify-center py-12 space-y-4">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#b85a00]"></div>
+            <p className="text-gray-400">Loading projects...</p>
           </div>
         ) : projects.length > 0 ? (
           <div className="bg-gray-800/50 rounded-lg overflow-hidden">

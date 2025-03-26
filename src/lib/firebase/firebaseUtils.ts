@@ -18,13 +18,6 @@ import {
   QueryDocumentSnapshot
 } from 'firebase/firestore';
 import { 
-  ref, 
-  uploadBytes, 
-  getDownloadURL, 
-  deleteObject,
-  listAll
-} from 'firebase/storage';
-import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
   signOut, 
@@ -32,7 +25,7 @@ import {
   sendPasswordResetEmail
 } from 'firebase/auth';
 
-import { db, auth, storage, initializeFirebase } from './firebase';
+import { db, auth, initializeFirebase } from './firebase';
 import { sampleProjects } from './sampleData';
 
 // Helper function to check if Firebase is properly initialized
@@ -44,9 +37,8 @@ const isFirebaseInitialized = () => {
     // Simple check if Firebase objects exist and have properties
     const authInitialized = auth && typeof auth === 'object' && Object.keys(auth).length > 0;
     const dbInitialized = db && typeof db === 'object' && Object.keys(db).length > 0;
-    const storageInitialized = storage && typeof storage === 'object' && Object.keys(storage).length > 0;
     
-    return authInitialized && dbInitialized && storageInitialized;
+    return authInitialized && dbInitialized;
   } catch (error) {
     console.error('Error checking Firebase initialization:', error);
     return false;
@@ -55,17 +47,20 @@ const isFirebaseInitialized = () => {
 
 // Ensure Firebase is initialized before performing operations
 const ensureFirebaseInitialized = async () => {
+  console.log('Checking Firebase initialization status...');
   if (!isFirebaseInitialized()) {
     console.log('Firebase not initialized, initializing now...');
     try {
-      const { auth: newAuth, db: newDb, storage: newStorage } = await initializeFirebase();
-      return { success: true, auth: newAuth, db: newDb, storage: newStorage };
+      const { auth: newAuth, db: newDb } = await initializeFirebase();
+      console.log('Firebase initialization result:', { success: true, auth: !!newAuth, db: !!newDb });
+      return { success: true, auth: newAuth, db: newDb };
     } catch (error) {
       console.error('Failed to initialize Firebase:', error);
       return { success: false, error };
     }
   }
-  return { success: true, auth, db, storage };
+  console.log('Firebase already initialized');
+  return { success: true, auth, db };
 };
 
 // ======== Authentication Utilities ========
@@ -347,8 +342,11 @@ export const getDocument = async (collectionName: string, documentId: string) =>
 
 export const updateDocument = async (collectionName: string, documentId: string, data: any) => {
   try {
+    console.log(`Attempting to update document ${collectionName}/${documentId}`);
+    
     // Ensure Firebase is initialized
-    await ensureFirebaseInitialized();
+    const initResult = await ensureFirebaseInitialized();
+    console.log('Firebase initialization check result:', initResult);
     
     // Normalize featured flag to boolean if it's a project
     if (collectionName === 'projects' && 'featured' in data) {
@@ -388,7 +386,11 @@ export const updateDocument = async (collectionName: string, documentId: string,
             console.log('Updated data:', data);
             
             return projects[index];
+          } else {
+            console.error(`Project with ID ${documentId} not found in localStorage`);
           }
+        } else {
+          console.error('No projects found in localStorage');
         }
       }
       
@@ -401,17 +403,23 @@ export const updateDocument = async (collectionName: string, documentId: string,
       updatedAt: serverTimestamp()
     };
     
+    console.log('Updating document in Firestore with data:', updateData);
+    
     // Update in Firestore
-    const docRef = doc(db, collectionName, documentId);
-    await updateDoc(docRef, updateData);
-    
-    console.log(`Updated document in Firestore: ${collectionName}/${documentId}`);
-    console.log('Updated data:', updateData);
-    
-    return {
-      id: documentId,
-      ...updateData
-    };
+    try {
+      const docRef = doc(db, collectionName, documentId);
+      await updateDoc(docRef, updateData);
+      
+      console.log(`Updated document in Firestore: ${collectionName}/${documentId}`);
+      
+      return {
+        id: documentId,
+        ...updateData
+      };
+    } catch (firestoreError) {
+      console.error('Firestore update error:', firestoreError);
+      throw firestoreError;
+    }
   } catch (error) {
     console.error(`Error updating document ${collectionName}/${documentId}:`, error);
     
@@ -449,10 +457,14 @@ export const updateDocument = async (collectionName: string, documentId: string,
             
             console.log(`Updated project in localStorage as fallback: ${documentId}`);
             return projects[index];
+          } else {
+            console.error(`Project with ID ${documentId} not found in localStorage fallback`);
           }
         } catch (localError) {
           console.error('Error updating in localStorage:', localError);
         }
+      } else {
+        console.error('No projects found in localStorage fallback');
       }
     }
     
@@ -542,56 +554,25 @@ export const getCollection = async (
 // ======== Firebase Storage Utilities ========
 
 export const uploadFile = async (path: string, file: File) => {
-  try {
-    const storageRef = ref(storage, path);
-    await uploadBytes(storageRef, file);
-    const downloadURL = await getDownloadURL(storageRef);
-    return downloadURL;
-  } catch (error) {
-    throw error;
-  }
+  // Return a placeholder URL instead
+  console.log('Firebase Storage has been removed. Please use base64 encoding or external image hosting.');
+  return 'https://via.placeholder.com/800x600/2a2a2a/FFFFFF/?text=External+Image+Required';
 };
 
 export const getFileURL = async (path: string) => {
-  try {
-    const storageRef = ref(storage, path);
-    const downloadURL = await getDownloadURL(storageRef);
-    return downloadURL;
-  } catch (error) {
-    throw error;
-  }
+  // Return a placeholder URL instead
+  console.log('Firebase Storage has been removed. Please use base64 encoding or external image hosting.');
+  return 'https://via.placeholder.com/800x600/2a2a2a/FFFFFF/?text=External+Image+Required';
 };
 
 export const deleteFile = async (path: string) => {
-  try {
-    const storageRef = ref(storage, path);
-    await deleteObject(storageRef);
-    return true;
-  } catch (error) {
-    throw error;
-  }
+  console.log('Firebase Storage has been removed. No file deletion needed.');
+  return true;
 };
 
 export const listFiles = async (path: string) => {
-  try {
-    const storageRef = ref(storage, path);
-    const res = await listAll(storageRef);
-    
-    const fileURLs = await Promise.all(
-      res.items.map(async (itemRef) => {
-        const url = await getDownloadURL(itemRef);
-        return {
-          name: itemRef.name,
-          url,
-          fullPath: itemRef.fullPath
-        };
-      })
-    );
-    
-    return fileURLs;
-  } catch (error) {
-    throw error;
-  }
+  console.log('Firebase Storage has been removed. No file listing available.');
+  return [];
 };
 
 /**
