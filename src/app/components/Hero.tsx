@@ -73,7 +73,7 @@ const Hero = () => {
             transition={{ duration: 1, delay: 0.2 }}
             className="mb-4 md:mb-6"
           >
-            <div className="text-[#b85a00] text-base md:text-lg lg:text-xl font-semibold tracking-wider uppercase mb-4 md:mb-6">
+            <div className="text-white text-base md:text-lg lg:text-xl font-semibold tracking-wider uppercase mb-4 md:mb-6">
               Design & Development Agency
             </div>
           </motion.div>
