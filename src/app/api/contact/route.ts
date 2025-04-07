@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     if (process.env.SENDGRID_API_KEY) {
       try {
         await sgMail.send({
-          to: process.env.EMAIL_TO || 'your-email@example.com',
+          to: process.env.EMAIL_TO || 'midwavestudio@gmail.com',
           from: process.env.EMAIL_FROM || 'noreply@midwavestudio.com',
           subject: subjectLine,
           html: htmlContent,
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
       // Send the email
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
-        to: process.env.EMAIL_TO || 'your-email@example.com',
+        to: process.env.EMAIL_TO || 'midwavestudio@gmail.com',
         subject: subjectLine,
         html: htmlContent,
         replyTo: email,
