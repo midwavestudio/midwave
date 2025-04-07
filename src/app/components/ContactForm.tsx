@@ -201,7 +201,7 @@ const ContactForm = () => {
                   <p className="text-red-400 text-sm sm:text-base font-medium">Error sending message:</p>
                   <p className="text-red-400 text-sm sm:text-base mt-1">{error}</p>
                   <p className="text-red-300 text-xs sm:text-sm mt-2">
-                    You can also reach us directly at <a href="mailto:info@midwavestudio.com" className="underline hover:text-red-200">info@midwavestudio.com</a> or call us at (720) 443-2517.
+                    You can also reach us directly by phone at (720) 443-2517.
                   </p>
                 </div>
               </div>

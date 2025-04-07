@@ -116,7 +116,7 @@ export default function Contact() {
                     <span className="font-semibold">Error Sending Message</span>
                   </div>
                   <p>{errorMessage}</p>
-                  <p className="mt-2">You can also reach us directly at <a href="mailto:info@midwavestudio.com" className="text-[#b85a00] hover:underline">info@midwavestudio.com</a> or call us at (720) 443-2517.</p>
+                  <p className="mt-2">You can also reach us directly by phone at (720) 443-2517.</p>
                 </div>
               )}
               
@@ -237,16 +237,6 @@ export default function Contact() {
                 <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">Contact Information</h2>
                 
                 <div className="space-y-4 md:space-y-6">
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#b85a00]/20 flex items-center justify-center mr-4">
-                      <FiMail className="text-[#b85a00] text-lg" />
-                    </div>
-                    <div>
-                      <h3 className="text-white font-medium text-sm md:text-base">Email</h3>
-                      <p className="text-gray-400 mt-1 text-sm md:text-base">info@midwavestudio.com</p>
-                    </div>
-                  </div>
-                  
                   <div className="flex items-start">
                     <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#b85a00]/20 flex items-center justify-center mr-4">
                       <FiPhone className="text-[#b85a00] text-lg" />

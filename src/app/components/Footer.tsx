@@ -79,12 +79,6 @@ const Footer = () => {
                 <span>(720) 443-2517</span>
               </li>
               <li className="flex items-start">
-                <FiMail className="text-[#b85a00] mr-2 mt-1" />
-                <a href="mailto:info@midwavestudio.com" className="hover:text-[#b85a00] transition-colors">
-                  info@midwavestudio.com
-                </a>
-              </li>
-              <li className="flex items-start">
                 <FiMapPin className="text-[#b85a00] mr-2 mt-1" />
                 <span>Kalispell, MT</span>
               </li>

@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     if (process.env.SENDGRID_API_KEY) {
       try {
         await sgMail.send({
-          to: 'info@midwavestudio.com',
+          to: process.env.EMAIL_TO || 'your-email@example.com',
           from: process.env.EMAIL_FROM || 'noreply@midwavestudio.com',
           subject: subjectLine,
           html: htmlContent,
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
       // Send the email
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
-        to: 'info@midwavestudio.com',
+        to: process.env.EMAIL_TO || 'your-email@example.com',
         subject: subjectLine,
         html: htmlContent,
         replyTo: email,
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Error sending email:', error);
     return NextResponse.json(
-      { error: 'Failed to send email. Please try again later or contact us directly at info@midwavestudio.com.' },
+      { error: 'Failed to send email. Please try again later or contact us directly by phone.' },
       { status: 500 }
     );
   }

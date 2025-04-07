@@ -4,7 +4,7 @@ This document provides instructions on how to set up the email functionality for
 
 ## Overview
 
-The contact form is configured to send emails to `info@midwavestudio.com` with the subject line "Midwave Form: [Subject]". The form supports two email sending methods:
+The contact form is configured to send emails to your specified email address with the subject line "Midwave Form: [Subject]". The form supports two email sending methods:
 
 1. **SendGrid** (preferred method)
 2. **Nodemailer with Gmail** (fallback method)
@@ -22,7 +22,8 @@ SendGrid is a reliable transactional email service that provides better delivera
 
 ```
 SENDGRID_API_KEY=your-sendgrid-api-key
-EMAIL_FROM=noreply@midwavestudio.com  # Must be a verified sender
+EMAIL_FROM=noreply@yourdomain.com  # Must be a verified sender
+EMAIL_TO=your-email@example.com  # The email where you want to receive contact form submissions
 ```
 
 ### Option 2: Nodemailer with Gmail (Fallback)
@@ -44,6 +45,7 @@ This method uses Nodemailer with a Gmail account. Note that Gmail has sending li
 ```
 EMAIL_USER=your-gmail-address@gmail.com
 EMAIL_PASSWORD=your-app-password
+EMAIL_TO=your-email@example.com  # The email where you want to receive contact form submissions
 ```
 
 ## Testing the Contact Form
@@ -53,7 +55,7 @@ After setting up either SendGrid or Nodemailer (or both), you can test the conta
 1. Start the development server: `npm run dev`
 2. Navigate to the contact page
 3. Fill out the form and submit it
-4. Check the email inbox for `info@midwavestudio.com`
+4. Check the specified email inbox for contact form submissions
 
 ## Troubleshooting
 
