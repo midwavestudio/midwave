@@ -4,58 +4,35 @@ This document provides instructions on how to set up the email functionality for
 
 ## Overview
 
-The contact form is configured to send emails to your specified email address with the subject line "Midwave Form: [Subject]". The form supports two email sending methods:
-
-1. **SendGrid** (preferred method)
-2. **Nodemailer with Gmail** (fallback method)
+The contact form is configured to send emails to your specified email address with the subject line "Midwave Form: [Subject]". The form uses Resend.com for email delivery.
 
 ## Setup Instructions
 
-### Option 1: SendGrid (Recommended)
+### Resend.com Setup
 
-SendGrid is a reliable transactional email service that provides better deliverability and tracking.
+Resend is a modern email API service that's both reliable and easy to set up. The free tier includes 100 emails per day.
 
-1. Create a SendGrid account at [https://sendgrid.com/](https://sendgrid.com/)
-2. Verify your sender domain or email address in SendGrid
-3. Create an API key with "Mail Send" permissions
-4. Add the following environment variables to your `.env.local` file:
+1. Create a Resend account at [https://resend.com/](https://resend.com/)
+2. Create an API key with appropriate permissions
+3. Add the following environment variables to your `.env.local` file:
 
 ```
-SENDGRID_API_KEY=your-sendgrid-api-key
-EMAIL_FROM=noreply@yourdomain.com  # Must be a verified sender
+RESEND_API_KEY=your-resend-api-key
+EMAIL_FROM=onboarding@resend.dev  # You can use this for testing
 EMAIL_TO=your-email@example.com  # The email where you want to receive contact form submissions
 ```
 
-### Option 2: Nodemailer with Gmail (Fallback)
-
-This method uses Nodemailer with a Gmail account. Note that Gmail has sending limits and may be less reliable for production use.
-
-1. Create or use an existing Gmail account
-2. Enable 2-Step Verification for your Google account
-   - Go to your Google Account settings: [https://myaccount.google.com/](https://myaccount.google.com/)
-   - Select "Security"
-   - Enable "2-Step Verification"
-3. Generate an App Password
-   - Go to your Google Account settings
-   - Select "Security"
-   - Under "Signing in to Google", select "App passwords"
-   - Generate a new app password for "Mail" and "Other (Custom name)" - name it "Midwave Contact Form"
-4. Add the following environment variables to your `.env.local` file:
-
-```
-EMAIL_USER=your-gmail-address@gmail.com
-EMAIL_PASSWORD=your-app-password
-EMAIL_TO=your-email@example.com  # The email where you want to receive contact form submissions
-```
+4. For production use, you should verify your domain in Resend and use a domain-specific email address in the `EMAIL_FROM` variable.
 
 ## Testing the Contact Form
 
-After setting up either SendGrid or Nodemailer (or both), you can test the contact form:
+After setting up Resend, you can test the contact form:
 
 1. Start the development server: `npm run dev`
 2. Navigate to the contact page
 3. Fill out the form and submit it
 4. Check the specified email inbox for contact form submissions
+5. You can also check your Resend dashboard to see if the email was sent successfully
 
 ## Troubleshooting
 
@@ -63,8 +40,8 @@ If you encounter issues with the contact form:
 
 1. Check the server logs for error messages
 2. Verify that your environment variables are set correctly
-3. If using SendGrid, check the SendGrid Activity Feed for delivery status
-4. If using Gmail, ensure that the app password is correct and that your Gmail account doesn't have additional security restrictions
+3. Check your Resend dashboard for delivery status and any error messages
+4. Ensure your Resend API key has the correct permissions
 
 ## Security Considerations
 

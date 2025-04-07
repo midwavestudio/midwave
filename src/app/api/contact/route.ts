@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
-import sgMail from '@sendgrid/mail';
+import { Resend } from 'resend';
 
-// Initialize SendGrid if API key is available
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-}
+// Initialize Resend with API key
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
   try {
@@ -33,49 +30,26 @@ export async function POST(req: NextRequest) {
       <p>${message.replace(/\n/g, '<br>')}</p>
     `;
 
-    // Try to send email using SendGrid first if API key is available
-    if (process.env.SENDGRID_API_KEY) {
-      try {
-        await sgMail.send({
-          to: process.env.EMAIL_TO || 'midwavestudio@gmail.com',
-          from: process.env.EMAIL_FROM || 'noreply@midwavestudio.com',
-          subject: subjectLine,
-          html: htmlContent,
-          replyTo: email,
-        });
-        
-        return NextResponse.json({ success: true });
-      } catch (sendGridError) {
-        console.error('SendGrid error:', sendGridError);
-        // Fall back to nodemailer if SendGrid fails
-      }
+    // Send email using Resend
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('Resend API key is missing');
     }
 
-    // Fall back to nodemailer if SendGrid is not configured or fails
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
-      // Create a nodemailer transporter
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASSWORD,
-        },
-      });
+    const { data, error } = await resend.emails.send({
+      from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
+      to: process.env.EMAIL_TO || 'midwavestudio@gmail.com',
+      subject: subjectLine,
+      html: htmlContent,
+      reply_to: email
+    });
 
-      // Send the email
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: process.env.EMAIL_TO || 'midwavestudio@gmail.com',
-        subject: subjectLine,
-        html: htmlContent,
-        replyTo: email,
-      });
-
-      return NextResponse.json({ success: true });
+    if (error) {
+      console.error('Resend error:', error);
+      throw new Error(`Failed to send email: ${error.message}`);
     }
 
-    // If we get here, neither method worked
-    throw new Error('Email configuration is missing');
+    console.log('Email sent successfully:', data);
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error sending email:', error);
     return NextResponse.json(
