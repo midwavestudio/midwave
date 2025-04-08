@@ -120,7 +120,7 @@ export default function Contact() {
                 </div>
               )}
               
-              <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6" suppressHydrationWarning>
                 <div>
                   <label htmlFor="name" className="block text-sm md:text-base font-medium text-gray-300 mb-1.5">
                     Your Name
