@@ -131,7 +131,7 @@ const NavLink = ({ href, children, className = '' }: NavLinkProps) => {
   return (
     <Link 
       href={href} 
-      className={`relative text-white hover:text-[#b85a00] text-sm font-medium transition-all duration-300 py-2 group ${className}`}
+      className={`relative text-white hover:text-[#b85a00] text-sm font-semibold transition-all duration-300 py-2 group ${className}`}
     >
       {children}
       <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#b85a00] transition-all duration-300 group-hover:w-full"></span>
@@ -149,7 +149,7 @@ const MobileNavLink = ({ href, children, onClick, className = '' }: MobileNavLin
     >
       <Link 
         href={href}
-        className={`block py-2 px-4 text-white hover:text-[#b85a00] transition-colors ${className}`}
+        className={`block py-2 px-4 text-white hover:text-[#b85a00] font-semibold transition-colors ${className}`}
         onClick={onClick}
       >
         {children}
