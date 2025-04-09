@@ -37,11 +37,13 @@ export async function POST(req: NextRequest) {
     }
 
     console.log('Sending email with Resend...');
-    console.log('From:', process.env.EMAIL_FROM || 'contact@midwavestudio.com');
+    // Use Resend's default "onboarding@resend.dev" address until domain is verified
+    const fromAddress = 'onboarding@resend.dev';
+    console.log('From:', fromAddress);
     console.log('To:', process.env.EMAIL_TO || 'midwavestudio@gmail.com');
     
     const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'contact@midwavestudio.com',
+      from: fromAddress,
       to: process.env.EMAIL_TO || 'midwavestudio@gmail.com',
       subject: subjectLine,
       html: htmlContent,
