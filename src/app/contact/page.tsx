@@ -239,6 +239,20 @@ export default function Contact() {
                 <div className="space-y-4 md:space-y-6">
                   <div className="flex items-start">
                     <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#b85a00]/20 flex items-center justify-center mr-4">
+                      <FiMail className="text-[#b85a00] text-lg" />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-medium text-sm md:text-base">Email</h3>
+                      <p className="text-gray-400 mt-1 text-sm md:text-base">
+                        <a href="mailto:midwavestudio@gmail.com" className="hover:text-[#b85a00] transition-colors">
+                          midwavestudio@gmail.com
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#b85a00]/20 flex items-center justify-center mr-4">
                       <FiPhone className="text-[#b85a00] text-lg" />
                     </div>
                     <div>
