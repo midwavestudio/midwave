@@ -32,6 +32,7 @@ const nextConfig = {
         hostname: 'storage.googleapis.com',
       },
     ],
+    quality: 100,
   },
   // Disable strict mode for now to avoid double rendering issues with external images
   reactStrictMode: false,

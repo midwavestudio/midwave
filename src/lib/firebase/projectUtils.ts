@@ -320,53 +320,8 @@ export const getFeaturedProjects = async (includeTestProjects: boolean = false):
  * This ensures the site always displays meaningful content
  */
 const getDefaultFeaturedProjects = (): Project[] => {
-  return [
-    {
-      id: 'default-1',
-      title: 'Marketing Agency Website',
-      slug: 'marketing-agency-website',
-      category: 'Web Development',
-      description: 'A modern website for a digital marketing agency with custom animations and responsive design.',
-      thumbnailUrl: '/images/HOMEthumb.jpg',
-      imageUrls: ['/images/HOME.png'],
-      featured: true,
-      createdAt: new Date().toISOString(),
-      client: 'XYZ Digital Agency',
-      services: ['Web Design', 'Frontend Development', 'CMS Integration'],
-      technologies: ['React', 'Next.js', 'Tailwind CSS'],
-      order: 1
-    },
-    {
-      id: 'default-2',
-      title: 'E-commerce Platform',
-      slug: 'ecommerce-platform',
-      category: 'E-commerce',
-      description: 'Full-featured e-commerce platform with product management, cart functionality, and payment integration.',
-      thumbnailUrl: 'https://via.placeholder.com/800x600/1a1a1a/FFFFFF/?text=E-commerce+Platform',
-      imageUrls: ['https://via.placeholder.com/1200x800/1a1a1a/FFFFFF/?text=E-commerce+Platform'],
-      featured: true,
-      createdAt: new Date().toISOString(),
-      client: 'Fashion Retailer',
-      services: ['Web Development', 'Payment Integration', 'UX Design'],
-      technologies: ['Next.js', 'Stripe', 'Firebase'],
-      order: 2
-    },
-    {
-      id: 'default-3',
-      title: 'Mobile App Design',
-      slug: 'mobile-app-design',
-      category: 'UI/UX Design',
-      description: 'Intuitive and elegant mobile application interface design for a fitness tracking app.',
-      thumbnailUrl: 'https://via.placeholder.com/800x600/1a1a1a/FFFFFF/?text=Mobile+App+Design',
-      imageUrls: ['https://via.placeholder.com/1200x800/1a1a1a/FFFFFF/?text=Mobile+App+Design'],
-      featured: true,
-      createdAt: new Date().toISOString(),
-      client: 'FitTrack',
-      services: ['UI Design', 'UX Research', 'Prototyping'],
-      technologies: ['Figma', 'Adobe XD', 'Protopie'],
-      order: 3
-    }
-  ];
+  // Return an empty array instead of mock projects
+  return [];
 };
 
 /**
@@ -374,104 +329,12 @@ const getDefaultFeaturedProjects = (): Project[] => {
  * @returns The created project or null if creation failed
  */
 export const createTestFeaturedProject = async (): Promise<{success: boolean, message?: string, project?: Project}> => {
-  try {
-    // Only allow in development mode or if explicitly allowed
-    if (process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_ALLOW_TEST_PROJECTS !== 'true') {
-      console.error('Test projects cannot be created in production mode');
-      return { success: false, message: 'Test projects cannot be created in production mode' };
-    }
-    
-    // Check if running on client
-    if (typeof window === 'undefined') {
-      console.error('Cannot create test project on server - no localStorage available');
-      return { success: false, message: 'Cannot create test project on server' };
-    }
-    
-    console.log('Creating test featured project...');
-    
-    // Create a unique slug for the test project
-    const timestamp = Date.now();
-    const randomNum = Math.floor(Math.random() * 1000);
-    const title = `Test Project ${randomNum}`;
-    const slug = `test-project-${randomNum}-${timestamp}`;
-    
-    // Create test project images
-    const imageUrls = createPlaceholderImages(5);
-    
-    // Create the test project data
-    const testProjectData = {
-      title,
-      description: 'This is a test project created for debugging purposes.',
-      fullDescription: 'This is a detailed description of the test project. It includes multiple paragraphs of text to demonstrate how the full description field works.\n\nThis project was automatically generated for testing purposes.',
-      category: 'Test',
-      thumbnailUrl: PLACEHOLDER_IMAGES.THUMBNAIL,
-      imageUrls,
-      featured: true,
-      slug,
-      client: 'Test Client',
-      date: new Date().toISOString().split('T')[0],
-      services: ['Testing', 'Development', 'Debugging'],
-      technologies: ['React', 'Next.js', 'Firebase'],
-      url: 'https://example.com',
-      order: 0
-    };
-    
-    try {
-      // Try to use the addDocument function from firebaseUtils
-      try {
-        const { addDocument } = await import('./firebaseUtils');
-        const result = await addDocument('projects', testProjectData);
-        console.log('Test project created successfully using addDocument:', result);
-        return { 
-          success: true, 
-          message: 'Test project created successfully', 
-          project: result as Project 
-        };
-      } catch (addDocError) {
-        console.error('Error using addDocument, falling back to localStorage:', addDocError);
-        
-        // Fallback to direct localStorage manipulation
-        // Get existing projects from localStorage
-        let projects: Project[] = [];
-        const existingProjects = localStorage.getItem('localProjects');
-        projects = existingProjects ? JSON.parse(existingProjects) : [];
-        
-        // Create a unique ID for the test project
-        const id = `test-${timestamp}`;
-        
-        // Create the complete test project object
-        const testProject: Project = {
-          id,
-          ...testProjectData,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-        
-        // Add the test project to localStorage
-        projects.push(testProject);
-        localStorage.setItem('localProjects', JSON.stringify(projects));
-        
-        console.log(`Test project created with ID: ${id} and title: ${testProject.title}`);
-        return { 
-          success: true, 
-          message: 'Test project created successfully (localStorage fallback)', 
-          project: testProject 
-        };
-      }
-    } catch (storageError) {
-      console.error('Error saving to localStorage:', storageError);
-      return { 
-        success: false, 
-        message: 'Failed to save test project. You may be in private/incognito mode or localStorage may be disabled.' 
-      };
-    }
-  } catch (error) {
-    console.error('Error creating test project:', error);
-    return { 
-      success: false, 
-      message: 'An unexpected error occurred while creating the test project' 
-    };
-  }
+  // Function disabled - no more test projects
+  console.log('Test projects have been disabled');
+  return { 
+    success: false, 
+    message: 'Test projects have been disabled' 
+  };
 };
 
 // Add new utility functions for image handling

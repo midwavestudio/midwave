@@ -309,6 +309,12 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
                             parent.appendChild(fallback);
                           }
                         }}
+                        style={{
+                          maxWidth: '100%',
+                          maxHeight: imageDimensions.isVertical ? 'calc(100vh - 100px)' : '85vh',
+                          width: 'auto',
+                          height: 'auto'
+                        }}
                       />
                     ) : (
                       <img
@@ -344,6 +350,12 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
                             `;
                             parent.appendChild(fallback);
                           }
+                        }}
+                        style={{
+                          maxWidth: '100%',
+                          maxHeight: imageDimensions.isVertical ? 'calc(100vh - 100px)' : '85vh',
+                          width: 'auto',
+                          height: 'auto'
                         }}
                       />
                     )}
@@ -510,6 +522,7 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
                             src={currentImage}
                             alt={`${project.title} - Image ${currentImageIndex + 1}`}
                             fill
+                            quality={100}
                             className="object-cover hover:scale-105 transition-transform duration-300"
                             onError={(e) => {
                               console.error('Error loading expanded Next.js image:', currentImage);
@@ -648,6 +661,7 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
                               src={url}
                               alt={`Thumbnail ${index + 1}`}
                               fill
+                              quality={100}
                               className="object-cover"
                             />
                           )}
