@@ -4,7 +4,8 @@ import { useState, useRef, useEffect, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { FiSave, FiX, FiImage, FiPlus, FiTrash2 } from 'react-icons/fi';
 import AdminLayout from '../../AdminLayout';
-import { compressImage, Project, PLACEHOLDER_IMAGES } from '@/lib/firebase/projectUtils';
+import { Project, PLACEHOLDER_IMAGES } from '@/lib/firebase/projectUtils';
+import { uploadCompressedImageToBlob, uploadMultipleImagesToBlob } from '@/lib/utils/blobUtils';
 import React from 'react';
 
 // Helper to slugify a string
@@ -258,13 +259,36 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
     if (!file) return;
     
     try {
-      // Handle image compression with higher quality for thumbnails
-      const base64Image = await compressImage(file, 1600, 1200, 0.92);
-      setThumbnailPreview(base64Image);
-      setFormData(prev => prev ? { ...prev, thumbnailUrl: base64Image } : null);
+      // Show loading state
+      setThumbnailPreview('loading');
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.thumbnailUrl;
+        return newErrors;
+      });
+      
+      // Upload to Vercel Blob
+      const result = await uploadCompressedImageToBlob(
+        file, 
+        800, 
+        600, 
+        0.8, 
+        `thumbnail-${Date.now()}-${file.name}`
+      );
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
+      setThumbnailPreview(result.url);
+      setFormData(prev => prev ? { ...prev, thumbnailUrl: result.url } : null);
     } catch (error) {
-      console.error('Error compressing thumbnail:', error);
-      setErrors(prev => ({ ...prev, thumbnailUrl: 'Failed to process thumbnail image' }));
+      console.error('Error uploading thumbnail:', error);
+      setThumbnailPreview(null);
+      setErrors(prev => ({ 
+        ...prev, 
+        thumbnailUrl: error instanceof Error ? error.message : 'Failed to upload thumbnail image' 
+      }));
     }
   };
   
@@ -276,29 +300,49 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
     if (!files || files.length === 0) return;
     
     try {
-      const newImagePromises = Array.from(files).map(file => 
-        compressImage(file, 2400, 1800, 0.95)
-      );
+      // Clear any previous errors
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.imageUrls;
+        return newErrors;
+      });
       
-      const newImages = await Promise.all(newImagePromises);
+      // Convert FileList to Array
+      const fileArray = Array.from(files);
       
-      // Update the preview state
-      const updatedPreviews = [...imagesPreviews, ...newImages];
-      setImagesPreviews(updatedPreviews);
+      // Upload to Vercel Blob
+      const result = await uploadMultipleImagesToBlob(fileArray, 1200, 800, 0.9);
       
-      // Update the form data directly with the complete list
-      const updatedFormData = {
-        ...formData,
-        imageUrls: updatedPreviews
-      };
+      if (result.errors.length > 0) {
+        console.error('Some images failed to upload:', result.errors);
+        setErrors(prev => ({ 
+          ...prev, 
+          imageUrls: `Some images failed to upload: ${result.errors.join(', ')}` 
+        }));
+      }
       
-      // Set the updated form data
-      setFormData(updatedFormData);
-      
-      console.log('Images added - new count:', updatedPreviews.length);
+      if (result.urls.length > 0) {
+        // Update the preview state
+        const updatedPreviews = [...imagesPreviews, ...result.urls];
+        setImagesPreviews(updatedPreviews);
+        
+        // Update the form data directly with the complete list
+        const updatedFormData = {
+          ...formData,
+          imageUrls: updatedPreviews
+        };
+        
+        // Set the updated form data
+        setFormData(updatedFormData);
+        
+        console.log('Images added - new count:', updatedPreviews.length);
+      }
     } catch (error) {
-      console.error('Error compressing images:', error);
-      setErrors(prev => ({ ...prev, imageUrls: 'Failed to process project images' }));
+      console.error('Error uploading images:', error);
+      setErrors(prev => ({ 
+        ...prev, 
+        imageUrls: error instanceof Error ? error.message : 'Failed to upload images' 
+      }));
     }
   };
   
@@ -943,7 +987,9 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
                     </label>
                     <div className="mt-1 flex items-center gap-4">
                       <div className="w-24 h-24 bg-gray-800 border border-gray-700 rounded-md overflow-hidden flex items-center justify-center">
-                        {thumbnailPreview ? (
+                        {thumbnailPreview === 'loading' ? (
+                          <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-[#b85a00]"></div>
+                        ) : thumbnailPreview ? (
                           <img 
                             src={thumbnailPreview} 
                             alt="Thumbnail preview" 
