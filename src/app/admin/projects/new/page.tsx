@@ -270,48 +270,37 @@ export default function NewProjectPage() {
       
       console.log('Creating new project:', newProject.title);
       
-      // Save to localStorage
-      if (typeof window !== 'undefined') {
-        try {
-          // Get existing projects
-          const existingData = localStorage.getItem('localProjects');
-          let projects: Project[] = [];
-          
-          if (existingData) {
-            try {
-              projects = JSON.parse(existingData);
-            } catch (parseError) {
-              console.error('Error parsing localStorage projects:', parseError);
-              throw new Error('Failed to parse localStorage data');
-            }
-          }
-          
-          // Check if project with same ID/slug already exists
-          const existingProjectIndex = projects.findIndex(p => 
-            p.id === newProject.id || p.slug === newProject.slug
-          );
-          
-          if (existingProjectIndex >= 0) {
-            throw new Error('A project with this slug already exists. Please use a different title/slug.');
-          }
-          
-          // Add new project
-          projects.push(newProject);
-          
-          // Save back to localStorage
-          localStorage.setItem('localProjects', JSON.stringify(projects));
-          
-          console.log('Project created successfully:', newProject.title);
-          
-          // Redirect back to projects page
-          router.push('/admin/projects');
-        } catch (error) {
-          console.error('Error saving project to localStorage:', error);
-          setErrors(prev => ({ 
-            ...prev, 
-            submit: error instanceof Error ? error.message : 'Failed to create project. Please try again.' 
-          }));
-        }
+      // Save to cloud storage
+      try {
+        const { createProject } = await import('@/lib/api/projectsApi');
+        
+        const createdProject = await createProject({
+          title: newProject.title,
+          slug: newProject.slug,
+          category: newProject.category,
+          description: newProject.description,
+          fullDescription: newProject.fullDescription,
+          client: newProject.client,
+          date: newProject.date,
+          services: newProject.services,
+          technologies: newProject.technologies,
+          thumbnailUrl: newProject.thumbnailUrl,
+          imageUrls: newProject.imageUrls,
+          url: newProject.url,
+          featured: newProject.featured,
+          order: newProject.order,
+        });
+        
+        console.log('Project created successfully in cloud:', createdProject.title);
+        
+        // Redirect back to projects page
+        router.push('/admin/projects');
+      } catch (error) {
+        console.error('Error saving project to cloud:', error);
+        setErrors(prev => ({ 
+          ...prev, 
+          submit: error instanceof Error ? error.message : 'Failed to create project. Please try again.' 
+        }));
       }
     } catch (error) {
       console.error('Error creating project:', error);

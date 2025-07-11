@@ -510,81 +510,37 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
         }
       }
       
-      // Try to update using firebaseUtils first, but only if we're not in development mode
-      // and only if we're fairly certain the document exists in Firebase
-      if (process.env.NODE_ENV !== 'development' && originalProject?.createdAt) {
-        try {
-          const { updateDocument } = await import('@/lib/firebase/firebaseUtils');
-          const result = await updateDocument('projects', id, updatedProject);
-          
-          console.log('Project updated successfully using updateDocument:', result);
-          
-          // Redirect back to projects page
-          router.push('/admin/projects');
-          return;
-        } catch (firebaseError) {
-          console.error('Error updating project with updateDocument:', firebaseError);
-          // Log the specific error for debugging
-          if (firebaseError instanceof Error) {
-            console.log('Firebase error message:', firebaseError.message);
-          }
-          // Continue to localStorage fallback
-        }
-      } else {
-        console.log('Skipping Firebase update, using localStorage only');
-      }
-      
-      // Fallback to localStorage if updateDocument fails
-      if (typeof window !== 'undefined') {
-        try {
-          // Get existing projects
-          const existingData = localStorage.getItem('localProjects');
-          let projects: Project[] = [];
-          
-          if (existingData) {
-            try {
-              projects = JSON.parse(existingData);
-            } catch (parseError) {
-              console.error('Error parsing localStorage projects:', parseError);
-              throw new Error('Failed to parse localStorage data');
-            }
-          }
-          
-          // Find and update project
-          const projectIndex = projects.findIndex(p => p.id === id);
-          
-          if (projectIndex === -1) {
-            // If project doesn't exist in localStorage, add it as a new project
-            console.log('Project not found in localStorage, adding as new project');
-            projects.push(updatedProject);
-          } else {
-            // Update existing project
-            projects[projectIndex] = updatedProject;
-          }
-          
-          // Save back to localStorage
-          localStorage.setItem('localProjects', JSON.stringify(projects));
-          
-          // Verify the save
-          const verifyData = localStorage.getItem('localProjects');
-          const verifyProjects = verifyData ? JSON.parse(verifyData) as Project[] : [];
-          const savedProject = verifyProjects.find(p => p.id === id);
-          
-          if (!savedProject) {
-            throw new Error('Failed to verify project was saved');
-          }
-          
-          console.log('Project updated successfully in localStorage:', id);
-          
-          // Redirect back to projects page
-          router.push('/admin/projects');
-        } catch (error) {
-          console.error('Error saving project to localStorage:', error);
-          setErrors(prev => ({ 
-            ...prev, 
-            submit: 'Failed to update project in localStorage. Please try again.' 
-          }));
-        }
+      // Save to cloud storage
+      try {
+        const { updateProject } = await import('@/lib/api/projectsApi');
+        
+        const savedProject = await updateProject(id, {
+          title: updatedProject.title,
+          slug: updatedProject.slug,
+          category: updatedProject.category,
+          description: updatedProject.description,
+          fullDescription: updatedProject.fullDescription,
+          client: updatedProject.client,
+          date: updatedProject.date,
+          services: updatedProject.services,
+          technologies: updatedProject.technologies,
+          thumbnailUrl: updatedProject.thumbnailUrl,
+          imageUrls: updatedProject.imageUrls,
+          url: updatedProject.url,
+          featured: updatedProject.featured,
+          order: updatedProject.order,
+        });
+        
+        console.log('Project updated successfully in cloud:', savedProject.title);
+        
+        // Redirect back to projects page
+        router.push('/admin/projects');
+      } catch (error) {
+        console.error('Error updating project in cloud:', error);
+        setErrors(prev => ({ 
+          ...prev, 
+          submit: error instanceof Error ? error.message : 'Failed to update project. Please try again.' 
+        }));
       }
     } catch (error) {
       console.error('Error updating project:', error);

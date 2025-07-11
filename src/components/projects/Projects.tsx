@@ -101,42 +101,37 @@ export default function Projects({ initialProjects }: ProjectsProps) {
     ensureDefaultProjects();
   }, [marketingAgencyWebsite, landDevelopmentProject]);
 
-  // Fetch projects on the client side
+  // Fetch projects from cloud storage on the client side
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         setIsLoading(true);
         setErrorMessage(null);
+        
+        // Use the cloud-based getProjects function which handles migration
         const fetchedProjects = await getProjects();
         
-        // Make sure the starting projects are included (to maintain Marketing Agency Website)
-        const allProjects = [...fetchedProjects];
-        
         // Log what projects were found
-        console.log('Projects loaded:');
-        allProjects.forEach(p => console.log(`- ${p.title} (Category: ${p.category}, Featured: ${p.featured})`));
+        console.log('Projects loaded from cloud:');
+        fetchedProjects.forEach(p => console.log(`- ${p.title} (Category: ${p.category}, Featured: ${p.featured})`));
         
-        setProjects(allProjects);
-        setFilteredProjects(allProjects);
+        setProjects(fetchedProjects);
+        setFilteredProjects(fetchedProjects);
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching projects:', error);
-        // Even if there's an error, still show the Marketing Agency Website and Land Development
-        setProjects([marketingAgencyWebsite, landDevelopmentProject]);
-        setFilteredProjects([marketingAgencyWebsite, landDevelopmentProject]);
-        setErrorMessage('Failed to load all projects, showing default projects.');
+        // Fallback to default projects if cloud fails
+        const fallbackProjects = [marketingAgencyWebsite, landDevelopmentProject];
+        setProjects(fallbackProjects);
+        setFilteredProjects(fallbackProjects);
+        setErrorMessage('Failed to load projects from cloud, showing default projects.');
         setIsLoading(false);
       }
     };
 
-    // If we already have initial projects, don't show loading state but still fetch in background
-    if (startingProjects.length > 0) {
-      setIsLoading(false);
-      fetchProjects();
-    } else {
-      fetchProjects();
-    }
-  }, [marketingAgencyWebsite, landDevelopmentProject, startingProjects]);
+    // Always fetch from cloud, even if we have initial projects
+    fetchProjects();
+  }, [marketingAgencyWebsite, landDevelopmentProject]);
 
   // Get unique categories from projects
   const categories = ['all', ...new Set(projects.map(project => project.category))];

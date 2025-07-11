@@ -34,38 +34,45 @@ export default function ProjectsListPage() {
   const [sortDirection, setSortDirection] = useState('desc');
   const [hasExistingSamples, setHasExistingSamples] = useState(false);
   
-  // Load projects from localStorage on component mount
+  // Load projects from cloud storage on component mount
   useEffect(() => {
     const fetchProjects = async () => {
       setLoading(true);
       
       try {
-        // Initialize empty projects array if none exist
-        await initializeSampleProjects();
+        const { getProjectsWithMigration } = await import('@/lib/api/projectsApi');
+        const cloudProjects = await getProjectsWithMigration();
         
-        // Get projects from localStorage
-        if (typeof window !== 'undefined') {
-          const localProjects = localStorage.getItem('localProjects');
-          
-          if (localProjects) {
-            const parsedProjects: Project[] = JSON.parse(localProjects);
-            setProjects(parsedProjects);
-            
-            // Extract unique categories
-            const uniqueCategories = Array.from(
-              new Set(parsedProjects.map(project => project.category))
-            ).filter(Boolean);
-            setCategories(uniqueCategories as string[]);
-            
-            // Check if there are sample projects
-            setHasExistingSamples(hasSampleProjects());
-          } else {
-            setProjects([]);
-            setHasExistingSamples(false);
-          }
-        }
+        setProjects(cloudProjects);
+        
+        // Extract unique categories
+        const uniqueCategories = Array.from(
+          new Set(cloudProjects.map(project => project.category))
+        ).filter(Boolean);
+        setCategories(uniqueCategories as string[]);
+        
+        // Check if there are sample projects (for display purposes)
+        setHasExistingSamples(hasSampleProjects());
       } catch (error) {
         console.error('Error fetching projects:', error);
+        
+        // Fallback to localStorage if cloud fails
+        if (typeof window !== 'undefined') {
+          try {
+            const localProjects = localStorage.getItem('localProjects');
+            if (localProjects) {
+              const parsedProjects: Project[] = JSON.parse(localProjects);
+              setProjects(parsedProjects);
+              
+              const uniqueCategories = Array.from(
+                new Set(parsedProjects.map(project => project.category))
+              ).filter(Boolean);
+              setCategories(uniqueCategories as string[]);
+            }
+          } catch (localError) {
+            console.error('Error parsing localStorage fallback:', localError);
+          }
+        }
       } finally {
         setLoading(false);
       }
@@ -111,12 +118,16 @@ export default function ProjectsListPage() {
     });
   
   // Handle project deletion
-  const handleDeleteProject = (projectId: string) => {
+  const handleDeleteProject = async (projectId: string) => {
     if (window.confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
       try {
-        // Remove project from localStorage
+        const { deleteProject } = await import('@/lib/api/projectsApi');
+        
+        // Delete from cloud storage
+        await deleteProject(projectId);
+        
+        // Update local state
         const updatedProjects = projects.filter(project => project.id !== projectId);
-        localStorage.setItem('localProjects', JSON.stringify(updatedProjects));
         setProjects(updatedProjects);
         
         // Update categories if needed
@@ -129,28 +140,33 @@ export default function ProjectsListPage() {
         setHasExistingSamples(hasSampleProjects());
       } catch (error) {
         console.error('Error deleting project:', error);
+        alert('Failed to delete project. Please try again.');
       }
     }
   };
   
   // Toggle featured status
-  const toggleFeatured = (projectId: string) => {
+  const toggleFeatured = async (projectId: string) => {
     try {
-      const updatedProjects = projects.map(project => {
-        if (project.id === projectId) {
-          return {
-            ...project,
-            featured: !project.featured,
-            updatedAt: new Date().toISOString(),
-          };
-        }
-        return project;
+      const { updateProject } = await import('@/lib/api/projectsApi');
+      
+      const project = projects.find(p => p.id === projectId);
+      if (!project) return;
+      
+      // Update in cloud storage
+      const updatedProject = await updateProject(projectId, {
+        featured: !project.featured,
       });
       
-      localStorage.setItem('localProjects', JSON.stringify(updatedProjects));
+      // Update local state
+      const updatedProjects = projects.map(p => 
+        p.id === projectId ? { ...p, featured: updatedProject.featured } : p
+      );
+      
       setProjects(updatedProjects);
     } catch (error) {
       console.error('Error updating featured status:', error);
+      alert('Failed to update featured status. Please try again.');
     }
   };
   
@@ -167,6 +183,12 @@ export default function ProjectsListPage() {
           </div>
           
           <div className="flex gap-3">
+            <Link
+              href="/admin/migrate-projects"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+            >
+              <span>Migrate to Cloud</span>
+            </Link>
             {hasExistingSamples && (
               <Link
                 href="/admin/projects/clear-samples"

@@ -141,154 +141,69 @@ export const getLandDevelopmentProject = (): Project => {
 };
 
 /**
- * Get all projects from Firestore
+ * Get all projects from cloud storage with localStorage migration
  */
 export const getProjects = async (): Promise<Project[]> => {
   try {
-    console.log('Getting all projects...');
+    console.log('Getting all projects from cloud storage...');
     
-    // Initialize an array to store all projects
-    let allProjects: Project[] = [];
+    // Import the API function dynamically to avoid server-side issues
+    const { getProjectsWithMigration } = await import('@/lib/api/projectsApi');
     
-    // First, try to get projects from localStorage
-    if (typeof window !== 'undefined') {
-      const localProjects = localStorage.getItem('localProjects');
-      if (localProjects) {
-        try {
-          const parsedProjects = JSON.parse(localProjects) as Project[];
-          console.log('Found projects in localStorage:', parsedProjects.length);
-          
-          // Normalize featured flag to boolean
-          const normalizedProjects = parsedProjects.map(project => {
-            const normalizedFeatured = project.featured === true || 
-                                      (typeof project.featured === 'string' && 
-                                       (project.featured.toLowerCase() === 'true' || 
-                                        project.featured === '1'));
-            
-            console.log(`Normalizing localStorage project "${project.title}": ${project.featured} (${typeof project.featured}) -> ${normalizedFeatured}`);
-            
-            // Ensure thumbnailUrl and imageUrls exist
-            let thumbnailUrl = project.thumbnailUrl || project.thumbnail || '';
-            if (!thumbnailUrl) {
-              thumbnailUrl = PLACEHOLDER_IMAGES.THUMBNAIL;
-            }
-            
-            let imageUrls = Array.isArray(project.imageUrls) ? project.imageUrls : [];
-            if (imageUrls.length === 0) {
-              imageUrls = createPlaceholderImages(3);
-            }
-            
-            return {
-              ...project,
-              featured: normalizedFeatured,
-              thumbnailUrl,
-              imageUrls
-            };
-          });
-          
-          console.log('Normalized localStorage projects featured flags');
-          
-          // Add ALL localStorage projects to the array
-          allProjects = [...normalizedProjects];
-        } catch (error) {
-          console.error('Error parsing localStorage projects:', error);
-        }
-      } else {
-        // If no projects in localStorage, initialize with sample projects
-        console.log('No projects found in localStorage, initializing with sample projects...');
-        await initializeSampleProjects();
-        
-        // Try to get projects again after initialization
-        const localProjectsAfterInit = localStorage.getItem('localProjects');
-        if (localProjectsAfterInit) {
-          try {
-            const parsedProjects = JSON.parse(localProjectsAfterInit) as Project[];
-            console.log('Found projects after initialization:', parsedProjects.length);
-            allProjects = [...parsedProjects];
-          } catch (error) {
-            console.error('Error parsing projects after initialization:', error);
-          }
-        }
-      }
-    }
+    const projects = await getProjectsWithMigration();
     
-    // Then, try to get projects from Firestore
-    try {
-      // Import Firebase modules dynamically
-      const { collection, getDocs, query, orderBy } = await import('firebase/firestore');
-      const { db } = await import('./firebase');
+    // Normalize featured flag to boolean and ensure required fields
+    const normalizedProjects = projects.map(project => {
+      const normalizedFeatured = project.featured === true || 
+                                (typeof project.featured === 'string' && 
+                                 (project.featured.toLowerCase() === 'true' || 
+                                  project.featured === '1'));
       
-      // Check if Firestore is available
-      if (db && typeof db === 'object' && Object.keys(db).length > 0) {
-        console.log('Fetching projects from Firestore...');
-        
-        const projectsRef = collection(db, 'projects');
-        const projectsQuery = query(projectsRef, orderBy('order', 'asc'));
-        const snapshot = await getDocs(projectsQuery);
-        
-        if (!snapshot.empty) {
-          console.log('Found projects in Firestore:', snapshot.docs.length);
-          
-          // Process Firestore projects
-          for (const doc of snapshot.docs) {
-            const projectData = doc.data() as Omit<Project, 'id'>;
-            
-            // Normalize featured flag to boolean
-            const normalizedFeatured = projectData.featured === true || 
-                                      (typeof projectData.featured === 'string' && 
-                                       (projectData.featured.toLowerCase() === 'true' || 
-                                        projectData.featured === '1'));
-            
-            console.log(`Normalizing Firestore project "${projectData.title}": ${projectData.featured} (${typeof projectData.featured}) -> ${normalizedFeatured}`);
-            
-            // Create a valid project object
-            const project: Project = {
-              id: doc.id,
-              title: projectData.title || '',
-              slug: projectData.slug || '',
-              category: projectData.category || '',
-              description: projectData.description || '',
-              fullDescription: projectData.fullDescription || '',
-              client: projectData.client || '',
-              date: projectData.date || '',
-              services: Array.isArray(projectData.services) ? projectData.services : [],
-              technologies: Array.isArray(projectData.technologies) ? projectData.technologies : [],
-              thumbnailUrl: projectData.thumbnailUrl || '',
-              imageUrls: Array.isArray(projectData.imageUrls) ? projectData.imageUrls : [],
-              url: projectData.url || '',
-              featured: normalizedFeatured,
-              order: projectData.order || 0
-            };
-            
-            // Add to allProjects if not already there (avoid duplicates)
-            if (!allProjects.some(p => p.id === project.id)) {
-              allProjects.push(project);
-            }
-          }
-        }
+      // Ensure thumbnailUrl and imageUrls exist
+      let thumbnailUrl = project.thumbnailUrl || project.thumbnail || '';
+      if (!thumbnailUrl) {
+        thumbnailUrl = PLACEHOLDER_IMAGES.THUMBNAIL;
       }
-    } catch (firestoreError) {
-      console.error('Error fetching from Firestore:', firestoreError);
-    }
+      
+      let imageUrls = Array.isArray(project.imageUrls) ? project.imageUrls : [];
+      if (imageUrls.length === 0) {
+        imageUrls = createPlaceholderImages(3);
+      }
+      
+      return {
+        ...project,
+        featured: normalizedFeatured,
+        thumbnailUrl,
+        imageUrls
+      };
+    });
     
-    // Note: Marketing Agency Website and Land Development projects are now managed through the admin panel
-    // They are no longer automatically added here
-    
-    // Return the projects we found, even if the array is empty
-    console.log('Returning total projects:', allProjects.length);
-    allProjects.forEach(p => console.log(`Project: ${p.title}, Featured: ${p.featured}, Category: ${p.category}`));
-    
-    // Sort by order
-    return allProjects.sort((a, b) => {
+    console.log(`Returning ${normalizedProjects.length} total projects from cloud`);
+    return normalizedProjects.sort((a, b) => {
       const orderA = a.order || 0;
       const orderB = b.order || 0;
       return orderA - orderB;
     });
   } catch (error) {
-    console.error('Error getting projects:', error);
+    console.error('Error in getProjects:', error);
     
-    // Return the Marketing Agency Website if there was an error
-    return [getMarketingAgencyWebsite()];
+    // Fallback to localStorage if cloud fails
+    if (typeof window !== 'undefined') {
+      try {
+        const localProjects = localStorage.getItem('localProjects');
+        if (localProjects) {
+          const parsedProjects = JSON.parse(localProjects) as Project[];
+          console.log('Falling back to localStorage projects:', parsedProjects.length);
+          return parsedProjects;
+        }
+      } catch (localError) {
+        console.error('Error parsing localStorage fallback:', localError);
+      }
+    }
+    
+    // Final fallback to default projects
+    console.log('All sources failed, using default projects');
+    return getDefaultFeaturedProjects();
   }
 };
 
