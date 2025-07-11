@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FiTrash2, FiCheck, FiAlertTriangle, FiArrowLeft } from 'react-icons/fi';
-import AdminLayout from '../../AdminLayout';
+import AdminLayout from '../AdminLayout';
 import { clearAllSampleProjects, hasSampleProjects, getUserProjects } from '@/lib/utils/clearSampleProjects';
 
 export default function ClearSampleProjectsPage() {
