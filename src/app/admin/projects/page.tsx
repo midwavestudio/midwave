@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FiEdit2, FiEye, FiTrash2, FiPlus, FiSearch, FiStar, FiFilter } from 'react-icons/fi';
+import { FiEdit2, FiEye, FiTrash2, FiPlus, FiSearch, FiStar, FiFilter, FiAlertTriangle } from 'react-icons/fi';
 import AdminDashboardLayout from '../AdminDashboardLayout';
 import { initializeSampleProjects } from '@/lib/firebase/projectUtils';
+import { hasSampleProjects } from '@/lib/utils/clearSampleProjects';
 
 interface Project {
   id: string;
@@ -31,6 +32,7 @@ export default function ProjectsListPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState('updatedAt');
   const [sortDirection, setSortDirection] = useState('desc');
+  const [hasExistingSamples, setHasExistingSamples] = useState(false);
   
   // Load projects from localStorage on component mount
   useEffect(() => {
@@ -38,7 +40,7 @@ export default function ProjectsListPage() {
       setLoading(true);
       
       try {
-        // Initialize sample projects if none exist
+        // Initialize empty projects array if none exist
         await initializeSampleProjects();
         
         // Get projects from localStorage
@@ -54,8 +56,12 @@ export default function ProjectsListPage() {
               new Set(parsedProjects.map(project => project.category))
             ).filter(Boolean);
             setCategories(uniqueCategories as string[]);
+            
+            // Check if there are sample projects
+            setHasExistingSamples(hasSampleProjects());
           } else {
             setProjects([]);
+            setHasExistingSamples(false);
           }
         }
       } catch (error) {
@@ -118,6 +124,9 @@ export default function ProjectsListPage() {
           new Set(updatedProjects.map(project => project.category))
         ).filter(Boolean);
         setCategories(uniqueCategories as string[]);
+        
+        // Check if there are still sample projects
+        setHasExistingSamples(hasSampleProjects());
       } catch (error) {
         console.error('Error deleting project:', error);
       }
@@ -158,6 +167,15 @@ export default function ProjectsListPage() {
           </div>
           
           <div className="flex gap-3">
+            {hasExistingSamples && (
+              <Link
+                href="/admin/projects/clear-samples"
+                className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md transition-colors"
+              >
+                <FiAlertTriangle size={16} />
+                <span>Clear Samples</span>
+              </Link>
+            )}
             <Link
               href="/admin/projects/reset-projects"
               className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition-colors"
@@ -173,6 +191,27 @@ export default function ProjectsListPage() {
             </Link>
           </div>
         </div>
+        
+        {/* Sample Projects Warning */}
+        {hasExistingSamples && (
+          <div className="bg-orange-900/20 border border-orange-900/50 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <FiAlertTriangle className="text-orange-400 flex-shrink-0 mt-0.5" size={20} />
+              <div className="flex-1">
+                <h3 className="text-orange-300 font-medium">Sample Projects Detected</h3>
+                <p className="text-orange-400 text-sm mt-1">
+                  Your portfolio contains sample/demo projects. These should be removed to show only your real work.
+                </p>
+                <Link
+                  href="/admin/projects/clear-samples"
+                  className="inline-flex items-center gap-2 mt-3 px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-sm rounded-md transition-colors"
+                >
+                  <span>Clear Sample Projects</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
         
         {/* Filters & Search */}
         <div className="bg-gray-800 rounded-xl border border-gray-700 p-4">

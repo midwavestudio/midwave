@@ -729,7 +729,8 @@ export const clearAllProjects = async (): Promise<{ success: boolean, message: s
 
 /**
  * Initialize localStorage with sample projects if no projects exist
- * This ensures the admin panel shows the featured projects from the website
+ * This function is now disabled to prevent automatic sample project creation
+ * Users should add their own projects through the admin interface
  */
 export const initializeSampleProjects = async (): Promise<{ success: boolean, message: string }> => {
   try {
@@ -742,27 +743,20 @@ export const initializeSampleProjects = async (): Promise<{ success: boolean, me
     if (existingProjects) {
       const projects = JSON.parse(existingProjects);
       if (projects.length > 0) {
-        console.log('Projects already exist in localStorage, skipping initialization');
-        return { success: true, message: 'Projects already initialized' };
+        console.log('Projects already exist in localStorage, no initialization needed');
+        return { success: true, message: 'Projects already exist' };
       }
     }
     
-    console.log('Initializing localStorage with sample projects...');
+    // Initialize with empty array instead of sample projects
+    console.log('Initializing localStorage with empty projects array...');
+    localStorage.setItem('localProjects', JSON.stringify([]));
     
-    // Add sample projects to localStorage
-    const projectsToAdd = sampleProjects.map(project => ({
-      ...project,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }));
-    
-    localStorage.setItem('localProjects', JSON.stringify(projectsToAdd));
-    
-    console.log(`Initialized ${projectsToAdd.length} sample projects in localStorage`);
-    return { success: true, message: `Initialized ${projectsToAdd.length} sample projects` };
+    console.log('Initialized empty projects array in localStorage');
+    return { success: true, message: 'Initialized empty projects array - ready for user projects' };
   } catch (error) {
-    console.error('Error initializing sample projects:', error);
-    return { success: false, message: 'Failed to initialize sample projects' };
+    console.error('Error initializing projects:', error);
+    return { success: false, message: 'Failed to initialize projects' };
   }
 };
 
