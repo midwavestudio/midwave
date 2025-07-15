@@ -51,77 +51,17 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
         
         console.log('Fetching project with ID:', id);
         
-        // Special handling for default projects with fixed IDs
-        if (id === 'land-development') {
-          try {
-            const { getLandDevelopmentProject } = await import('@/lib/firebase/projectUtils');
-            const landDevelopmentProject = getLandDevelopmentProject();
-            setFormData(landDevelopmentProject);
-            setOriginalProject(landDevelopmentProject);
-            
-            if (landDevelopmentProject.thumbnailUrl) {
-              setThumbnailPreview(landDevelopmentProject.thumbnailUrl);
-            }
-            
-            if (landDevelopmentProject.imageUrls && landDevelopmentProject.imageUrls.length > 0) {
-              setImagesPreviews(landDevelopmentProject.imageUrls);
-            }
-            
-            console.log('Land Development project loaded from template');
-            setIsLoading(false);
-            return;
-          } catch (error) {
-            console.error('Error loading Land Development template:', error);
-          }
+        // Fetch all projects from the API (which uses KV database)
+        const response = await fetch('/api/projects');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        // First try to get the project from localStorage
-        let project = null;
-        const localData = localStorage.getItem('localProjects');
-        
-        if (localData) {
-          try {
-            const projects = JSON.parse(localData) as Project[];
-            project = projects.find(p => p.id === id);
-            console.log('LocalStorage search result:', project ? 'Found' : 'Not found');
-          } catch (error) {
-            console.error('Error parsing localStorage projects:', error);
-          }
-        }
-        
-        // If not found in localStorage, try to get from Firestore (only in production)
-        if (!project && process.env.NODE_ENV !== 'development') {
-          try {
-            // Import Firebase modules dynamically
-            const { doc, getDoc } = await import('firebase/firestore');
-            const { db, ensureFirebaseInitialized } = await import('@/lib/firebase/firebase');
-            
-            // Ensure Firebase is initialized
-            await ensureFirebaseInitialized();
-            
-            // Get from Firestore
-            const docRef = doc(db, 'projects', id);
-            const docSnap = await getDoc(docRef);
-            
-            if (docSnap.exists()) {
-              const projectData = docSnap.data() as Omit<Project, 'id'>;
-              project = {
-                id: docSnap.id,
-                ...projectData
-              } as Project;
-              console.log('Firestore search result:', 'Found');
-            } else {
-              console.log('Project not found in Firestore');
-            }
-          } catch (firestoreError) {
-            console.error('Error fetching from Firestore:', firestoreError);
-          }
-        } else if (!project) {
-          console.log('Using localStorage only in development mode');
-        }
+        const projects = await response.json() as Project[];
+        const project = projects.find(p => p.id === id);
         
         if (!project) {
-          console.error('Project not found in any data source');
+          console.error('Project not found in KV database');
           setErrors(prev => ({ ...prev, fetch: 'Project not found. It may have been deleted or is not accessible.' }));
           setIsLoading(false);
           return;
@@ -444,73 +384,7 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
       console.log('URL:', updatedProject.url);
       console.log('Images count:', updatedProject.imageUrls?.length || 0);
       
-      // Handle special IDs differently
-      if (id === 'land-development') {
-        // For Land Development project, we need a special approach to ensure
-        // data is correctly saved
-        
-        // Save to localStorage
-        if (typeof window !== 'undefined') {
-          try {
-            // Get existing projects
-            const existingData = localStorage.getItem('localProjects');
-            let projects: Project[] = [];
-            
-            if (existingData) {
-              try {
-                projects = JSON.parse(existingData);
-              } catch (parseError) {
-                console.error('Error parsing localStorage projects:', parseError);
-                throw new Error('Failed to parse localStorage data');
-              }
-            }
-            
-            // Always remove the existing project first
-            projects = projects.filter(p => 
-              p.id !== 'land-development' && 
-              p.slug !== 'land-development'
-            );
-            
-            console.log('Removed existing Land Development project from localStorage');
-            
-            // Add the updated project
-            projects.push({
-              ...updatedProject,
-              id: 'land-development',
-              slug: 'land-development'
-            });
-            
-            console.log('Added updated Land Development project to localStorage');
-            
-            // Save back to localStorage
-            localStorage.setItem('localProjects', JSON.stringify(projects));
-            
-            // Double-check the save worked correctly
-            const verifyData = localStorage.getItem('localProjects');
-            if (verifyData) {
-              const verifyProjects = JSON.parse(verifyData) as Project[];
-              const savedProject = verifyProjects.find(p => p.id === 'land-development');
-              if (savedProject) {
-                console.log('Verified save - images count:', savedProject.imageUrls?.length || 0);
-              }
-            }
-            
-            // Redirect back to projects page
-            router.push('/admin/projects');
-            return;
-          } catch (error) {
-            console.error('Error saving Land Development project:', error);
-            setErrors(prev => ({ 
-              ...prev, 
-              submit: 'Failed to save Land Development project. Please try again.' 
-            }));
-            setIsSaving(false);
-            return;
-          }
-        }
-      }
-      
-      // Try to save to cloud storage first, fall back to localStorage
+      // Use the API to update the project
       try {
         const { updateProject } = await import('@/lib/api/projectsApi');
         
@@ -531,69 +405,16 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
           order: updatedProject.order,
         });
           
-        console.log('Project updated successfully in cloud:', savedProject.title);
+        console.log('Project updated successfully:', savedProject.title);
           
         // Redirect back to projects page
         router.push('/admin/projects');
-      } catch (cloudError) {
-        console.error('Error updating project in cloud:', cloudError);
-        
-        // Check if it's a "service unavailable" error (Vercel KV not configured)
-        if (cloudError instanceof Error && cloudError.message.includes('Cloud storage not configured')) {
-          console.log('Cloud storage not configured, falling back to localStorage');
-          
-          // Fall back to localStorage
-          try {
-            if (typeof window !== 'undefined') {
-              // Get existing projects
-              const existingData = localStorage.getItem('localProjects');
-              let projects: Project[] = [];
-              
-              if (existingData) {
-                try {
-                  projects = JSON.parse(existingData);
-                } catch (parseError) {
-                  console.error('Error parsing localStorage projects:', parseError);
-                  throw new Error('Failed to parse localStorage data');
-                }
-              }
-              
-              // Find and update the project
-              const projectIndex = projects.findIndex(p => p.id === id);
-              
-              if (projectIndex >= 0) {
-                // Update existing project
-                projects[projectIndex] = updatedProject;
-                console.log('Updated existing project in localStorage');
-              } else {
-                // Add as new project if not found
-                projects.push(updatedProject);
-                console.log('Added new project to localStorage');
-              }
-              
-              // Save back to localStorage
-              localStorage.setItem('localProjects', JSON.stringify(projects));
-              
-              console.log('Project saved to localStorage successfully');
-              
-              // Redirect back to projects page
-              router.push('/admin/projects');
-              return;
-            }
-          } catch (localError) {
-            console.error('Error saving to localStorage:', localError);
-            setErrors(prev => ({ 
-              ...prev, 
-              submit: 'Failed to save project. Please try again.' 
-            }));
-          }
-        } else {
-          // Other cloud errors
-          setErrors(prev => ({ 
-            ...prev, 
-            submit: cloudError instanceof Error ? cloudError.message : 'Failed to update project. Please try again.' 
-          }));
-        }
+      } catch (error) {
+        console.error('Error updating project:', error);
+        setErrors(prev => ({ 
+          ...prev, 
+          submit: error instanceof Error ? error.message : 'Failed to update project. Please try again.' 
+        }));
       }
     } catch (error) {
       console.error('Error updating project:', error);
