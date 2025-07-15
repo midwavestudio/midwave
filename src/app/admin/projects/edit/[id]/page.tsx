@@ -322,20 +322,20 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
       }
       
       if (result.urls.length > 0) {
-        // Update the preview state
+      // Update the preview state
         const updatedPreviews = [...imagesPreviews, ...result.urls];
-        setImagesPreviews(updatedPreviews);
-        
-        // Update the form data directly with the complete list
-        const updatedFormData = {
-          ...formData,
-          imageUrls: updatedPreviews
-        };
-        
-        // Set the updated form data
-        setFormData(updatedFormData);
-        
-        console.log('Images added - new count:', updatedPreviews.length);
+      setImagesPreviews(updatedPreviews);
+      
+      // Update the form data directly with the complete list
+      const updatedFormData = {
+        ...formData,
+        imageUrls: updatedPreviews
+      };
+      
+      // Set the updated form data
+      setFormData(updatedFormData);
+      
+      console.log('Images added - new count:', updatedPreviews.length);
       }
     } catch (error) {
       console.error('Error uploading images:', error);
@@ -510,7 +510,7 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
         }
       }
       
-      // Save to cloud storage
+      // Try to save to cloud storage first, fall back to localStorage
       try {
         const { updateProject } = await import('@/lib/api/projectsApi');
         
@@ -530,17 +530,70 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
           featured: updatedProject.featured,
           order: updatedProject.order,
         });
-        
+          
         console.log('Project updated successfully in cloud:', savedProject.title);
-        
+          
         // Redirect back to projects page
         router.push('/admin/projects');
-      } catch (error) {
-        console.error('Error updating project in cloud:', error);
-        setErrors(prev => ({ 
-          ...prev, 
-          submit: error instanceof Error ? error.message : 'Failed to update project. Please try again.' 
-        }));
+      } catch (cloudError) {
+        console.error('Error updating project in cloud:', cloudError);
+        
+        // Check if it's a "service unavailable" error (Vercel KV not configured)
+        if (cloudError instanceof Error && cloudError.message.includes('Cloud storage not configured')) {
+          console.log('Cloud storage not configured, falling back to localStorage');
+          
+          // Fall back to localStorage
+          try {
+            if (typeof window !== 'undefined') {
+              // Get existing projects
+              const existingData = localStorage.getItem('localProjects');
+              let projects: Project[] = [];
+              
+              if (existingData) {
+                try {
+                  projects = JSON.parse(existingData);
+                } catch (parseError) {
+                  console.error('Error parsing localStorage projects:', parseError);
+                  throw new Error('Failed to parse localStorage data');
+                }
+              }
+              
+              // Find and update the project
+              const projectIndex = projects.findIndex(p => p.id === id);
+              
+              if (projectIndex >= 0) {
+                // Update existing project
+                projects[projectIndex] = updatedProject;
+                console.log('Updated existing project in localStorage');
+              } else {
+                // Add as new project if not found
+                projects.push(updatedProject);
+                console.log('Added new project to localStorage');
+              }
+              
+              // Save back to localStorage
+              localStorage.setItem('localProjects', JSON.stringify(projects));
+              
+              console.log('Project saved to localStorage successfully');
+              
+              // Redirect back to projects page
+              router.push('/admin/projects');
+              return;
+            }
+          } catch (localError) {
+            console.error('Error saving to localStorage:', localError);
+            setErrors(prev => ({ 
+              ...prev, 
+              submit: 'Failed to save project. Please try again.' 
+            }));
+          }
+        } else {
+          // Other cloud errors
+          setErrors(prev => ({ 
+            ...prev, 
+            submit: cloudError instanceof Error ? cloudError.message : 'Failed to update project. Please try again.' 
+          }));
+        }
       }
     } catch (error) {
       console.error('Error updating project:', error);

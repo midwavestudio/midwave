@@ -40,6 +40,12 @@ export default function ProjectsListPage() {
       setLoading(true);
       
       try {
+        // Force clear localStorage to ensure cloud sync
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('localProjects');
+          console.log('Admin: localStorage cleared - loading from cloud');
+        }
+        
         const { getProjectsWithMigration } = await import('@/lib/api/projectsApi');
         const cloudProjects = await getProjectsWithMigration();
         

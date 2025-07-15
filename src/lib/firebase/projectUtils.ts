@@ -151,33 +151,33 @@ export const getProjects = async (): Promise<Project[]> => {
     const { getProjectsWithMigration } = await import('@/lib/api/projectsApi');
     
     const projects = await getProjectsWithMigration();
-    
+          
     // Normalize featured flag to boolean and ensure required fields
     const normalizedProjects = projects.map(project => {
-      const normalizedFeatured = project.featured === true || 
-                                (typeof project.featured === 'string' && 
-                                 (project.featured.toLowerCase() === 'true' || 
-                                  project.featured === '1'));
-      
-      // Ensure thumbnailUrl and imageUrls exist
-      let thumbnailUrl = project.thumbnailUrl || project.thumbnail || '';
-      if (!thumbnailUrl) {
-        thumbnailUrl = PLACEHOLDER_IMAGES.THUMBNAIL;
-      }
-      
-      let imageUrls = Array.isArray(project.imageUrls) ? project.imageUrls : [];
-      if (imageUrls.length === 0) {
-        imageUrls = createPlaceholderImages(3);
-      }
-      
-      return {
-        ...project,
-        featured: normalizedFeatured,
-        thumbnailUrl,
-        imageUrls
-      };
-    });
-    
+            const normalizedFeatured = project.featured === true || 
+                                      (typeof project.featured === 'string' && 
+                                       (project.featured.toLowerCase() === 'true' || 
+                                        project.featured === '1'));
+            
+            // Ensure thumbnailUrl and imageUrls exist
+            let thumbnailUrl = project.thumbnailUrl || project.thumbnail || '';
+            if (!thumbnailUrl) {
+              thumbnailUrl = PLACEHOLDER_IMAGES.THUMBNAIL;
+            }
+            
+            let imageUrls = Array.isArray(project.imageUrls) ? project.imageUrls : [];
+            if (imageUrls.length === 0) {
+              imageUrls = createPlaceholderImages(3);
+            }
+            
+            return {
+              ...project,
+              featured: normalizedFeatured,
+              thumbnailUrl,
+              imageUrls
+            };
+          });
+          
     console.log(`Returning ${normalizedProjects.length} total projects from cloud`);
     return normalizedProjects.sort((a, b) => {
       const orderA = a.order || 0;

@@ -139,8 +139,13 @@ export async function getProjectsWithMigration(): Promise<Project[]> {
     // First try to get projects from the cloud
     const cloudProjects = await fetchProjects();
     
-    // If we have cloud projects, return them
+    // If we have cloud projects, clear localStorage and return them
     if (cloudProjects.length > 0) {
+      // Clear localStorage to ensure all devices sync from cloud
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('localProjects');
+        console.log('localStorage cleared - using cloud projects');
+      }
       return cloudProjects;
     }
 

@@ -42,9 +42,6 @@ const FeaturedProjects = () => {
       
       console.log('Fetching featured projects...');
       
-      // Initialize sample projects if none exist
-      await initializeSampleProjects();
-      
       // Only include actual featured projects, no test projects
       const featuredProjects = await getFeaturedProjects(false);
       console.log('Featured projects fetched:', featuredProjects.length);

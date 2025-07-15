@@ -24,19 +24,23 @@ const SAMPLE_PROJECT_IDENTIFIERS = [
   'gastronome',
   'Gastronome',
   
-  // Default projects that were being auto-added
-  'marketing-agency-website',
-  'Marketing Agency Website',
-  'land-development',
-  'Land Development',
-  'architectural-visualization-studio',
-  'Architectural Visualization Studio',
-  
   // Test projects
   'default-1',
   'test-project',
   
   // Any project with "test" in the ID
+];
+
+// User's real projects that should NEVER be treated as samples
+const USER_REAL_PROJECTS = [
+  'marketing-agency-website',
+  'Marketing Agency Website',
+  'land-development', 
+  'Land Development',
+  'architectural-visualization-studio',
+  'Architectural Visualization Studio',
+  'arch-viz',
+  'Arch Viz'
 ];
 
 /**
@@ -52,6 +56,16 @@ export const isSampleProject = (project: any): boolean => {
     project.title?.toLowerCase()
   ].filter(Boolean);
   
+  // First check if it's a user's real project - if so, never treat as sample
+  const isUserRealProject = USER_REAL_PROJECTS.some(realId => 
+    identifiers.some(id => id === realId.toLowerCase())
+  );
+  
+  if (isUserRealProject) {
+    return false;
+  }
+  
+  // Then check if it's a sample project
   return SAMPLE_PROJECT_IDENTIFIERS.some(sampleId => 
     identifiers.some(id => 
       id === sampleId.toLowerCase() || 

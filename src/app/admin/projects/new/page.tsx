@@ -72,7 +72,7 @@ export default function NewProjectPage() {
         id: slugify(value) // Set ID same as slug for new projects
       }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
     }
     
     // Clear any error for this field
@@ -174,7 +174,7 @@ export default function NewProjectPage() {
         delete newErrors.imageUrls;
         return newErrors;
       });
-      
+    
       // Convert FileList to Array
       const fileArray = Array.from(files);
       
@@ -196,8 +196,8 @@ export default function NewProjectPage() {
           imageUrls: [...prev.imageUrls, ...result.urls]
         }));
       }
-      
-      // Reset file input
+    
+    // Reset file input
       if (imageFileRef.current) {
         imageFileRef.current.value = '';
       }
@@ -292,7 +292,7 @@ export default function NewProjectPage() {
         });
         
         console.log('Project created successfully in cloud:', createdProject.title);
-        
+      
         // Redirect back to projects page
         router.push('/admin/projects');
       } catch (error) {
@@ -318,11 +318,11 @@ export default function NewProjectPage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
+        <div>
             <h1 className="text-2xl font-bold mb-1">Create New Project</h1>
             <p className="text-gray-400">Add a new project to your portfolio</p>
-          </div>
-          
+        </div>
+        
           <div className="flex gap-2">
             <button
               type="button"
@@ -367,69 +367,69 @@ export default function NewProjectPage() {
                   Project Information
                 </h2>
                 
-                <div className="space-y-4">
+            <div className="space-y-4">
                   {/* Title */}
-                  <div>
-                    <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-1">
+                <div>
+                  <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-1">
                       Project Title <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="title"
-                      name="title"
-                      value={formData.title}
+                  </label>
+                  <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    value={formData.title}
                       onChange={handleChange}
                       className={`w-full px-3 py-2 bg-gray-800 border ${
                         errors.title ? 'border-red-500' : 'border-gray-700'
                       } rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]/50`}
                       placeholder="Enter project title"
-                    />
+                  />
                     {errors.title && (
                       <p className="mt-1 text-sm text-red-500">{errors.title}</p>
                     )}
-                  </div>
-                  
+                </div>
+                
                   {/* Slug */}
-                  <div>
-                    <label htmlFor="slug" className="block text-sm font-medium text-gray-300 mb-1">
+                <div>
+                  <label htmlFor="slug" className="block text-sm font-medium text-gray-300 mb-1">
                       URL Slug <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="slug"
-                      name="slug"
-                      value={formData.slug}
+                  </label>
+                  <input
+                    type="text"
+                    id="slug"
+                    name="slug"
+                    value={formData.slug}
                       onChange={handleChange}
                       className={`w-full px-3 py-2 bg-gray-800 border ${
                         errors.slug ? 'border-red-500' : 'border-gray-700'
                       } rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]/50`}
                       placeholder="project-url-slug"
-                    />
+                  />
                     {errors.slug && (
                       <p className="mt-1 text-sm text-red-500">{errors.slug}</p>
                     )}
                     <p className="mt-1 text-xs text-gray-400">
-                      This will be used in the URL: /projects/{formData.slug}
-                    </p>
-                  </div>
-                  
+                    This will be used in the URL: /projects/{formData.slug}
+                  </p>
+              </div>
+              
                   {/* Category and Client */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="category" className="block text-sm font-medium text-gray-300 mb-1">
-                        Category
-                      </label>
-                      <input
-                        type="text"
-                        id="category"
-                        name="category"
-                        value={formData.category}
+                <div>
+                  <label htmlFor="category" className="block text-sm font-medium text-gray-300 mb-1">
+                    Category
+                  </label>
+                  <input
+                    type="text"
+                    id="category"
+                    name="category"
+                    value={formData.category}
                         onChange={handleChange}
                         className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]/50"
                         placeholder="e.g., Web Development"
-                      />
-                    </div>
-                    
+                  />
+                </div>
+                
                     <div>
                       <label htmlFor="client" className="block text-sm font-medium text-gray-300 mb-1">
                         Client
@@ -448,14 +448,14 @@ export default function NewProjectPage() {
                   
                   {/* Date and URL */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="date" className="block text-sm font-medium text-gray-300 mb-1">
+                <div>
+                  <label htmlFor="date" className="block text-sm font-medium text-gray-300 mb-1">
                         Project Date
-                      </label>
-                      <input
-                        type="date"
-                        id="date"
-                        name="date"
+                  </label>
+                  <input
+                    type="date"
+                    id="date"
+                    name="date"
                         value={formData.date || ''}
                         onChange={handleChange}
                         className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]/50"
@@ -474,10 +474,10 @@ export default function NewProjectPage() {
                         onChange={handleChange}
                         className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]/50"
                         placeholder="https://example.com"
-                      />
-                    </div>
-                  </div>
-                  
+                  />
+                </div>
+              </div>
+              
                   {/* Featured Project Toggle */}
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
@@ -486,9 +486,9 @@ export default function NewProjectPage() {
                       </label>
                       <div className="pt-2">
                         <label className="inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            name="featured"
+                <input
+                  type="checkbox"
+                  name="featured"
                             checked={Boolean(formData.featured)}
                             onChange={handleChange}
                             className="sr-only"
@@ -503,60 +503,60 @@ export default function NewProjectPage() {
                           <span className="ml-2 text-gray-300 text-sm">
                             {formData.featured ? 'Yes' : 'No'}
                           </span>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
                 </div>
               </div>
-              
+          
               {/* Services & Technologies */}
               <div className="space-y-4">
                 <h2 className="text-lg font-semibold text-white border-b border-gray-700 pb-2">
                   Services & Technologies
                 </h2>
                 
-                <div className="space-y-4">
+            <div className="space-y-4">
                   {/* Services */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-1">
                       Services
                     </label>
                     <div className="flex items-center gap-2">
-                      <input
-                        type="text"
+                <input
+                  type="text"
                         value={serviceInput}
                         onChange={(e) => setServiceInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addService())}
                         className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-[#b85a00]/50"
                         placeholder="e.g., Web Design"
-                      />
-                      <button
-                        type="button"
+                />
+                <button
+                  type="button"
                         onClick={addService}
                         className="p-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md"
-                      >
+                >
                         <FiPlus size={16} />
-                      </button>
-                    </div>
-                    
+                </button>
+              </div>
+              
                     {formData.services && formData.services.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-2">
                         {formData.services.map((service, index) => (
-                          <div 
+                  <div
                             key={index} 
                             className="flex items-center bg-gray-700 text-gray-200 px-2 py-1 rounded-md text-sm"
-                          >
+                  >
                             <span>{service}</span>
-                            <button
-                              type="button"
+                    <button
+                      type="button"
                               onClick={() => removeService(index)}
                               className="ml-1.5 text-gray-400 hover:text-red-400"
-                            >
-                              <FiX size={14} />
-                            </button>
-                          </div>
-                        ))}
+                    >
+                      <FiX size={14} />
+                    </button>
+                  </div>
+                ))}
                       </div>
                     )}
                   </div>
@@ -607,7 +607,7 @@ export default function NewProjectPage() {
                 </div>
               </div>
             </div>
-            
+          
             {/* Right Column - Media & Description */}
             <div className="space-y-6">
               {/* Project Media */}
@@ -615,9 +615,9 @@ export default function NewProjectPage() {
                 <h2 className="text-lg font-semibold text-white border-b border-gray-700 pb-2">
                   Project Media
                 </h2>
-                
+            
                 <div className="space-y-4">
-                  {/* Thumbnail Upload */}
+            {/* Thumbnail Upload */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-1">
                       Thumbnail Image
@@ -627,9 +627,9 @@ export default function NewProjectPage() {
                         {thumbnailPreview === 'loading' ? (
                           <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-[#b85a00]"></div>
                         ) : thumbnailPreview ? (
-                          <img 
-                            src={thumbnailPreview} 
-                            alt="Thumbnail preview" 
+                  <img
+                    src={thumbnailPreview}
+                    alt="Thumbnail preview"
                             className="w-full h-full object-cover cursor-pointer"
                             onClick={() => setExpandedImage(thumbnailPreview)}
                           />
@@ -693,15 +693,15 @@ export default function NewProjectPage() {
                         </button>
                         
                         {imagesPreviews.length > 0 && (
-                          <button
-                            type="button"
+                  <button
+                    type="button"
                             onClick={clearAllImages}
                             className="px-3 py-2 bg-red-700 hover:bg-red-600 text-white rounded-md"
-                          >
+                  >
                             Clear All Images
-                          </button>
+                  </button>
                         )}
-                      </div>
+                </div>
                       
                       <p className="mt-1 text-xs text-gray-400">
                         Recommended size: 1200x800px. Max size: 5MB per image
@@ -736,8 +736,8 @@ export default function NewProjectPage() {
                     )}
                   </div>
                 </div>
-              </div>
-              
+            </div>
+            
               {/* Expanded Image Modal */}
               {expandedImage && (
                 <div 
@@ -745,7 +745,7 @@ export default function NewProjectPage() {
                   onClick={() => setExpandedImage(null)}
                 >
                   <div className="relative max-w-screen-xl max-h-screen">
-                    <img 
+                    <img
                       src={expandedImage} 
                       alt="Expanded view" 
                       className="max-w-full max-h-[90vh] object-contain rounded-lg"
@@ -762,7 +762,7 @@ export default function NewProjectPage() {
                   </div>
                 </div>
               )}
-              
+                
               {/* Project Descriptions */}
               <div className="space-y-4">
                 <h2 className="text-lg font-semibold text-white border-b border-gray-700 pb-2">
@@ -789,13 +789,13 @@ export default function NewProjectPage() {
                     {errors.description && (
                       <p className="mt-1 text-sm text-red-500">{errors.description}</p>
                     )}
-                  </div>
+                    </div>
                   
                   {/* Full Description */}
                   <div>
                     <label htmlFor="fullDescription" className="block text-sm font-medium text-gray-300 mb-1">
                       Full Description
-                    </label>
+                  </label>
                     <textarea
                       id="fullDescription"
                       name="fullDescription"

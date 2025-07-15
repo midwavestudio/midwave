@@ -31,75 +31,38 @@ export default function Projects({ initialProjects }: ProjectsProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Ensure Marketing Agency Website is in localStorage
+  // Clear localStorage to force sync from cloud storage
   useEffect(() => {
-    const ensureDefaultProjects = () => {
+    const forceCloudSync = async () => {
       if (typeof window === 'undefined') return;
       
       try {
-        console.log('Checking if default projects are in localStorage...');
-        const localData = localStorage.getItem('localProjects');
-        let projects: Project[] = [];
+        console.log('Clearing localStorage to force cloud sync...');
+        // Clear localStorage so all devices fetch from cloud
+        localStorage.removeItem('localProjects');
         
-        if (localData) {
-          try {
-            projects = JSON.parse(localData);
-            console.log(`Found ${projects.length} projects in localStorage`);
-            
-            // Log all projects in localStorage
-            projects.forEach((p, i) => {
-              console.log(`Project ${i+1}: ${p.title}, ID: ${p.id}, Images: ${p.imageUrls?.length || 0}`);
-            });
-            
-          } catch (error) {
-            console.error('Error parsing localStorage projects:', error);
-            projects = [];
+        // Also clear any other project-related keys that might exist
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.includes('project') || key.includes('sample'))) {
+            keysToRemove.push(key);
           }
-        } else {
-          console.log('No projects found in localStorage');
         }
         
-        let hasUpdated = false;
+        keysToRemove.forEach(key => {
+          localStorage.removeItem(key);
+          console.log(`Cleared localStorage key: ${key}`);
+        });
         
-        // Check if Marketing Agency Website exists
-        if (!projects.some(p => p.title === 'Marketing Agency Website' || p.id === 'marketing-agency-website')) {
-          console.log('Adding Marketing Agency Website to localStorage');
-          projects.push(marketingAgencyWebsite);
-          hasUpdated = true;
-        }
-        
-        // Check if Land Development exists - check by both ID and title to avoid duplicates
-        if (!projects.some(p => 
-          p.title === 'Land Development' || 
-          p.id === 'land-development' || 
-          p.slug === 'land-development'
-        )) {
-          console.log('Adding Land Development to localStorage');
-          
-          // Log the Land Development project being added
-          console.log('Land Development project data:');
-          console.log(`- Title: ${landDevelopmentProject.title}`);
-          console.log(`- ID: ${landDevelopmentProject.id}`);
-          console.log(`- Thumbnail: ${landDevelopmentProject.thumbnailUrl}`);
-          console.log(`- Images: ${landDevelopmentProject.imageUrls.length}`);
-          console.log(`- Image URLs: ${landDevelopmentProject.imageUrls.join(', ')}`);
-          
-          projects.push(landDevelopmentProject);
-          hasUpdated = true;
-        }
-        
-        // Only update localStorage if we added a project
-        if (hasUpdated) {
-          console.log('Updating localStorage with default projects');
-          localStorage.setItem('localProjects', JSON.stringify(projects));
-        }
+        console.log('localStorage cleared - all projects will now load from cloud storage');
       } catch (error) {
-        console.error('Error accessing localStorage:', error);
+        console.error('Error clearing localStorage:', error);
       }
     };
     
-    ensureDefaultProjects();
-  }, [marketingAgencyWebsite, landDevelopmentProject]);
+    forceCloudSync();
+  }, []);
 
   // Fetch projects from cloud storage on the client side
   useEffect(() => {
