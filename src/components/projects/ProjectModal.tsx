@@ -30,10 +30,10 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
   const [expandedImageLoading, setExpandedImageLoading] = useState(true);
   const [highQualityMode, setHighQualityMode] = useState(false);
   
-  // Disable body scrolling when image is expanded
+  // Disable body scrolling only when zoomed in on expanded image
   useEffect(() => {
     const preventScroll = (e: Event) => {
-      if (expandedImage) {
+      if (expandedImage && zoomLevel > 1) {
         e.preventDefault();
         return false;
       }
@@ -43,10 +43,12 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
     // Handle wheel and touchmove events
     const options = { passive: false };
     
-    if (expandedImage) {
+    if (expandedImage && zoomLevel > 1) {
       document.body.style.overflow = 'hidden';
       document.addEventListener('wheel', preventScroll, options);
       document.addEventListener('touchmove', preventScroll, options);
+    } else {
+      document.body.style.overflow = '';
     }
     
     return () => {
@@ -54,7 +56,7 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
       document.removeEventListener('wheel', preventScroll);
       document.removeEventListener('touchmove', preventScroll);
     };
-  }, [expandedImage]);
+  }, [expandedImage, zoomLevel]);
   
   // Handle click outside expanded image to close it
   useEffect(() => {
