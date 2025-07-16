@@ -16,12 +16,10 @@ interface ProjectsProps {
 }
 
 export default function Projects({ initialProjects }: ProjectsProps) {
-  // Always include the Marketing Agency Website
-  const marketingAgencyWebsite = getMarketingAgencyWebsite();
-  const landDevelopmentProject = getLandDevelopmentProject();
+  // Use initial projects or empty array to start
   const startingProjects = initialProjects.length > 0 
     ? initialProjects 
-    : [marketingAgencyWebsite, landDevelopmentProject];
+    : [];
     
   const [projects, setProjects] = useState<Project[]>(startingProjects);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>(startingProjects);
@@ -84,7 +82,7 @@ export default function Projects({ initialProjects }: ProjectsProps) {
       } catch (error) {
         console.error('Error fetching projects:', error);
         // Fallback to default projects if cloud fails
-        const fallbackProjects = [marketingAgencyWebsite, landDevelopmentProject];
+        const fallbackProjects = [getMarketingAgencyWebsite(), getLandDevelopmentProject()];
         setProjects(fallbackProjects);
         setFilteredProjects(fallbackProjects);
         setErrorMessage('Failed to load projects from cloud, showing default projects.');
@@ -94,7 +92,7 @@ export default function Projects({ initialProjects }: ProjectsProps) {
 
     // Always fetch from cloud, even if we have initial projects
     fetchProjects();
-  }, [marketingAgencyWebsite, landDevelopmentProject]);
+  }, []); // Remove dependencies to prevent infinite loop
 
   // Get unique categories from projects
   const categories = ['all', ...new Set(projects.map(project => project.category))];
