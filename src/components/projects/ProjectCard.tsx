@@ -62,7 +62,7 @@ export default function ProjectCard({ project, onClick }: ProjectCardProps) {
 
   return (
     <motion.div
-      className="group cursor-pointer overflow-hidden rounded-lg bg-background-lighter h-[350px] sm:h-[400px] relative"
+      className="group cursor-pointer overflow-hidden rounded-lg bg-background-lighter aspect-[4/3] relative"
       whileHover={{ y: -5 }}
       transition={{ duration: 0.3 }}
       onClick={handleCardClick}
@@ -83,7 +83,7 @@ export default function ProjectCard({ project, onClick }: ProjectCardProps) {
               <img
                 src={thumbnailUrl}
                 alt={title}
-                className="absolute inset-0 w-full h-full object-cover transition-all duration-500 group-hover:scale-110"
+                className="absolute inset-0 w-full h-full object-contain transition-all duration-500 group-hover:scale-105"
                 style={{ opacity: isLoading ? 0 : 1 }}
                 onLoad={() => setIsLoading(false)}
                 onError={() => setImageError(true)}
@@ -97,7 +97,7 @@ export default function ProjectCard({ project, onClick }: ProjectCardProps) {
                 alt={title}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="object-cover transition-all duration-500 group-hover:scale-110"
+                className="object-contain transition-all duration-500 group-hover:scale-105"
                 style={{ opacity: isLoading ? 0 : 1 }}
                 quality={95}
                 priority={false}
@@ -140,18 +140,18 @@ export default function ProjectCard({ project, onClick }: ProjectCardProps) {
       </div>
 
       {/* Content */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 z-20">
-        <h3 className="text-lg sm:text-xl font-bold text-white mb-1 sm:mb-2 group-hover:text-[#b85a00] transition-colors line-clamp-2">
+      <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 z-20">
+        <h3 className="text-base sm:text-lg font-bold text-white mb-1 group-hover:text-[#b85a00] transition-colors line-clamp-2">
           {title}
         </h3>
-        <p className="text-gray-300 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">
+        <p className="text-gray-300 text-xs sm:text-sm mb-2 sm:mb-3 line-clamp-1">
           {description}
         </p>
         
         <div className="flex items-center justify-between">
-          <span className="inline-flex items-center text-[#b85a00] text-xs sm:text-sm font-medium group-hover:translate-x-2 transition-transform">
+          <span className="inline-flex items-center text-[#b85a00] text-xs font-medium group-hover:translate-x-1 transition-transform">
             View Details
-            <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
           </span>
@@ -162,10 +162,10 @@ export default function ProjectCard({ project, onClick }: ProjectCardProps) {
               target="_blank" 
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center bg-[#b85a00] hover:bg-[#a04d00] text-white text-xs sm:text-sm font-medium px-3 sm:px-4 py-1.5 sm:py-2 rounded-md transition-colors shadow-lg shadow-black/20"
+              className="inline-flex items-center bg-[#b85a00] hover:bg-[#a04d00] text-white text-xs font-medium px-2 sm:px-3 py-1 sm:py-1.5 rounded-md transition-colors shadow-lg shadow-black/20"
             >
               Visit Site
-              <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
             </a>

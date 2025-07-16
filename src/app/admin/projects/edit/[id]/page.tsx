@@ -411,10 +411,10 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
         router.push('/admin/projects');
       } catch (error) {
         console.error('Error updating project:', error);
-        setErrors(prev => ({ 
-          ...prev, 
+            setErrors(prev => ({ 
+              ...prev, 
           submit: error instanceof Error ? error.message : 'Failed to update project. Please try again.' 
-        }));
+          }));
       }
     } catch (error) {
       console.error('Error updating project:', error);

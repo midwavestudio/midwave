@@ -731,7 +731,7 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                 {/* Image Gallery */}
                 <div className="relative">
                   <div 
-                    className="relative aspect-video bg-gray-800 rounded-lg overflow-hidden cursor-zoom-in"
+                    className="relative aspect-[4/3] bg-gray-800 rounded-lg overflow-hidden cursor-zoom-in"
                     onClick={handleImageExpand}
                   >
                     {hasValidImage ? (
@@ -739,11 +739,11 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                         <img
                           src={currentImage}
                           alt={`${project.title} - Image ${currentImageIndex + 1}`}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                          className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
                           loading="eager"
                           style={{
                             imageRendering: 'auto',
-                            objectFit: 'cover'
+                            objectFit: 'contain'
                           }}
                         />
                       </div>
@@ -843,7 +843,7 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                           <img
                             src={url}
                             alt={`Thumbnail ${index + 1}`}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain"
                             loading="lazy"
                           />
                         </button>
