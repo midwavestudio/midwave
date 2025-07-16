@@ -62,7 +62,7 @@ export default function ProjectCard({ project, onClick }: ProjectCardProps) {
 
   return (
     <motion.div
-      className="group cursor-pointer overflow-hidden rounded-lg bg-background-lighter aspect-[4/3] relative"
+      className="group cursor-pointer overflow-hidden rounded-lg bg-background-lighter aspect-video relative"
       whileHover={{ y: -5 }}
       transition={{ duration: 0.3 }}
       onClick={handleCardClick}

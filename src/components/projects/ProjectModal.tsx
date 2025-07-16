@@ -731,7 +731,7 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                 {/* Image Gallery */}
                 <div className="relative">
                   <div 
-                    className="relative aspect-[4/3] bg-gray-800 rounded-lg overflow-hidden cursor-zoom-in"
+                    className="relative aspect-video bg-gray-800 rounded-lg overflow-hidden cursor-zoom-in"
                     onClick={handleImageExpand}
                   >
                     {hasValidImage ? (
