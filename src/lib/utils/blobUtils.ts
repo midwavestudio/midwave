@@ -91,13 +91,24 @@ export const uploadImageToBlob = async (
       body: formData,
     });
     
-    const result = await response.json();
-    
+    // Check if response is ok first
     if (!response.ok) {
-      throw new Error(result.error || 'Upload failed');
+      // Try to get error message from response
+      let errorMessage = `Upload failed with status ${response.status}`;
+      try {
+        const errorResult = await response.json();
+        errorMessage = errorResult.error || errorMessage;
+      } catch {
+        // If response isn't valid JSON, use the status text
+        errorMessage = response.statusText || errorMessage;
+      }
+      throw new Error(errorMessage);
     }
     
+    // Parse successful response
+    const result = await response.json();
     return { url: result.url };
+    
   } catch (error) {
     console.error('Error uploading to Vercel Blob:', error);
     return { 
