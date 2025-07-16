@@ -31,7 +31,7 @@ export default function ProjectGrid({ projects, onProjectClick, isLoading }: Pro
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-8 gap-x-4 md:gap-y-12 md:gap-x-8">
       {projects.map((project, index) => (
         <motion.div
           key={project.id}
