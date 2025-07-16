@@ -135,6 +135,28 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
     return url?.startsWith('http://') || url?.startsWith('https://');
   };
 
+  // Get high-quality version of an image URL
+  const getHighQualityImageUrl = (url: string) => {
+    if (!url) return url;
+    
+    // For external URLs (like Vercel Blob), try to get original quality
+    if (isExternalUrl(url)) {
+      // For Vercel Blob URLs, ensure we get the highest quality
+      if (url.includes('vercel-storage.com') || url.includes('blob.vercel-storage.com')) {
+        // Remove any existing quality parameters and add high-quality ones
+        const cleanUrl = url.split('?')[0];
+        // Request original size with maximum quality
+        return `${cleanUrl}?quality=100&format=auto`;
+      }
+      
+      // For other external URLs, return as-is (they should be original quality)
+      return url;
+    }
+    
+    // For local images, return as-is (they should be original quality)
+    return url;
+  };
+
   // Reset zoom and pan position
   const resetZoom = () => {
     setZoomLevel(1);
@@ -572,7 +594,7 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                     }}
                   >
                     <img
-                      src={currentImage}
+                      src={getHighQualityImageUrl(currentImage)}
                       alt={`${project.title} - Expanded View`}
                       className="max-w-full object-contain"
                       draggable="false"
@@ -595,7 +617,7 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                         objectFit: 'contain',
                         display: expandedImageLoading ? 'none' : 'block',
                         // Use high-quality rendering for all zoom levels
-                        imageRendering: zoomLevel > 1 ? 'crisp-edges' : 'auto',
+                        imageRendering: 'crisp-edges' as any,
                         willChange: 'transform',
                         backfaceVisibility: 'hidden',
                         // Enhanced contrast and sharpness for better text readability
@@ -607,7 +629,6 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                         // Ensure crisp edges for text readability
                         WebkitFontSmoothing: 'antialiased',
                         MozOsxFontSmoothing: 'grayscale',
-                        // Additional quality improvements
                       }}
                     />
                   </div>
@@ -737,12 +758,12 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                     {hasValidImage ? (
                       <div className="w-full">
                         <img
-                          src={currentImage}
+                          src={getHighQualityImageUrl(currentImage)}
                           alt={`${project.title} - Image ${currentImageIndex + 1}`}
                           className="w-full h-auto object-contain hover:scale-105 transition-transform duration-300"
                           loading="eager"
                           style={{
-                            imageRendering: 'auto',
+                            imageRendering: 'crisp-edges' as any,
                             objectFit: 'contain'
                           }}
                         />
@@ -841,10 +862,13 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                           }`}
                         >
                           <img
-                            src={url}
+                            src={getHighQualityImageUrl(url)}
                             alt={`Thumbnail ${index + 1}`}
                             className="w-full h-full object-contain"
                             loading="lazy"
+                            style={{
+                              imageRendering: 'crisp-edges' as any
+                            }}
                           />
                         </button>
                       ))}
