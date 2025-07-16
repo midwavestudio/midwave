@@ -176,6 +176,56 @@ export const uploadMultipleImagesToBlob = async (
 };
 
 /**
+ * Upload high-quality image to Vercel Blob without compression
+ */
+export const uploadHighQualityImageToBlob = async (
+  file: File,
+  filename?: string
+): Promise<{ url: string; error?: string }> => {
+  try {
+    console.log(`Uploading high-quality image: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
+    
+    // Upload directly without any compression
+    return await uploadImageToBlob(file, filename);
+  } catch (error) {
+    console.error('Error uploading high-quality image:', error);
+    return { 
+      url: '', 
+      error: error instanceof Error ? error.message : 'Failed to upload high-quality image' 
+    };
+  }
+};
+
+/**
+ * Upload multiple high-quality images to Vercel Blob without compression
+ */
+export const uploadMultipleHighQualityImagesToBlob = async (
+  files: File[]
+): Promise<{ urls: string[]; errors: string[] }> => {
+  const urls: string[] = [];
+  const errors: string[] = [];
+  
+  console.log(`Uploading ${files.length} high-quality images without compression`);
+  
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const filename = `${Date.now()}-${i}-${file.name}`;
+    
+    const result = await uploadHighQualityImageToBlob(file, filename);
+    
+    if (result.error) {
+      errors.push(`${file.name}: ${result.error}`);
+    } else {
+      urls.push(result.url);
+      console.log(`✓ Uploaded: ${file.name} -> ${result.url}`);
+    }
+  }
+  
+  console.log(`Upload complete: ${urls.length} successful, ${errors.length} failed`);
+  return { urls, errors };
+};
+
+/**
  * Delete image from Vercel Blob (if needed)
  * Note: Vercel Blob doesn't have a direct delete API in the client,
  * but you can implement this server-side if needed

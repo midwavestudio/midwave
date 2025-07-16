@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FiSave, FiX, FiImage, FiPlus, FiTrash2 } from 'react-icons/fi';
 import AdminLayout from '../../AdminLayout';
 import { Project, PLACEHOLDER_IMAGES } from '@/lib/firebase/projectUtils';
-import { uploadCompressedImageToBlob, uploadMultipleImagesToBlob } from '@/lib/utils/blobUtils';
+import { uploadHighQualityImageToBlob, uploadMultipleHighQualityImagesToBlob } from '@/lib/utils/blobUtils';
 import React from 'react';
 
 // Helper to slugify a string
@@ -207,12 +207,9 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
         return newErrors;
       });
       
-      // Upload to Vercel Blob
-      const result = await uploadCompressedImageToBlob(
+      // Upload to Vercel Blob without compression
+      const result = await uploadHighQualityImageToBlob(
         file, 
-        800, 
-        600, 
-        0.8, 
         `thumbnail-${Date.now()}-${file.name}`
       );
       
@@ -250,8 +247,8 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
       // Convert FileList to Array
       const fileArray = Array.from(files);
       
-      // Upload to Vercel Blob
-      const result = await uploadMultipleImagesToBlob(fileArray, 1200, 800, 0.9);
+      // Upload to Vercel Blob without compression
+      const result = await uploadMultipleHighQualityImagesToBlob(fileArray);
       
       if (result.errors.length > 0) {
         console.error('Some images failed to upload:', result.errors);
@@ -851,7 +848,7 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
                           </button>
                           
                           <p className="mt-1 text-xs text-gray-400">
-                            Recommended size: 800x600px. Max size: 2MB
+                            High-quality upload (no compression). Max size: 10MB
                           </p>
                         </div>
                         
@@ -899,7 +896,7 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
                       </div>
                       
                       <p className="mt-1 text-xs text-gray-400">
-                        Recommended size: 1200x800px. Max size: 5MB per image
+                        High-quality upload (no compression). Max size: 10MB per image
                       </p>
                       
                       {errors.imageUrls && (
