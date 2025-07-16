@@ -654,7 +654,7 @@ export default function NewProjectPage() {
                           </button>
                           
                           <p className="mt-1 text-xs text-gray-400">
-                            High-quality upload (no compression). Max size: 10MB
+                            High-quality upload (no compression). Max size: 25MB
                           </p>
                         </div>
                         
@@ -701,7 +701,7 @@ export default function NewProjectPage() {
                 </div>
                       
                       <p className="mt-1 text-xs text-gray-400">
-                        High-quality upload (no compression). Max size: 10MB per image
+                        High-quality upload (no compression). Max size: 25MB per image
                       </p>
                       
                       {errors.imageUrls && (

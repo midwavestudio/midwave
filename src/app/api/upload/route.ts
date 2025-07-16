@@ -2,7 +2,7 @@ import { put } from '@vercel/blob';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Configure API route to handle larger files
-export const maxDuration = 30; // 30 seconds timeout
+export const maxDuration = 60; // 60 seconds timeout for large files
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
@@ -36,12 +36,12 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Check file size (10MB limit)
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    // Check file size (25MB limit)
+    const maxSize = 25 * 1024 * 1024; // 25MB in bytes
     if (file.size > maxSize) {
-      console.error(`File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB > 10MB`);
+      console.error(`File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB > 25MB`);
       return NextResponse.json(
-        { error: `File too large. Maximum size is 10MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB.` },
+        { error: `File too large. Maximum size is 25MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB.` },
         { status: 413 }
       );
     }
