@@ -731,15 +731,15 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                 {/* Image Gallery */}
                 <div className="relative">
                   <div 
-                    className="relative aspect-video bg-gray-800 rounded-lg overflow-hidden cursor-zoom-in"
+                    className="relative bg-gray-800 rounded-lg overflow-hidden cursor-zoom-in"
                     onClick={handleImageExpand}
                   >
                     {hasValidImage ? (
-                      <div className="w-full h-full">
+                      <div className="w-full">
                         <img
                           src={currentImage}
                           alt={`${project.title} - Image ${currentImageIndex + 1}`}
-                          className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
+                          className="w-full h-auto object-contain hover:scale-105 transition-transform duration-300"
                           loading="eager"
                           style={{
                             imageRendering: 'auto',

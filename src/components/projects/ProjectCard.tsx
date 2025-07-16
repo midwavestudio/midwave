@@ -62,19 +62,19 @@ export default function ProjectCard({ project, onClick }: ProjectCardProps) {
 
   return (
     <motion.div
-      className="group cursor-pointer overflow-hidden rounded-lg bg-background-lighter aspect-video relative"
+      className="group cursor-pointer overflow-hidden rounded-lg bg-background-lighter relative"
       whileHover={{ y: -5 }}
       transition={{ duration: 0.3 }}
       onClick={handleCardClick}
       title={`View details for ${title}`}
     >
       {/* Project Image */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-br h-full w-full overflow-hidden">
+      <div className="relative z-0 bg-gradient-to-br w-full overflow-hidden">
         {validThumbnail && !imageError ? (
           <>
             {/* Loading placeholder */}
             <div 
-              className="absolute inset-0 bg-gradient-to-br from-gray-900 to-gray-700 opacity-100 transition-opacity duration-500"
+              className="absolute inset-0 bg-gradient-to-br from-gray-900 to-gray-700 opacity-100 transition-opacity duration-500 min-h-[200px]"
               style={{ opacity: isLoading ? 1 : 0 }}
             />
             
@@ -83,7 +83,7 @@ export default function ProjectCard({ project, onClick }: ProjectCardProps) {
               <img
                 src={thumbnailUrl}
                 alt={title}
-                className="absolute inset-0 w-full h-full object-contain transition-all duration-500 group-hover:scale-105"
+                className="w-full h-auto object-contain transition-all duration-500 group-hover:scale-105"
                 style={{ opacity: isLoading ? 0 : 1 }}
                 onLoad={() => setIsLoading(false)}
                 onError={() => setImageError(true)}
@@ -91,19 +91,22 @@ export default function ProjectCard({ project, onClick }: ProjectCardProps) {
                 decoding="async"
               />
             ) : (
-              // Use Next.js Image for internal URLs
-              <Image
-                src={thumbnailUrl}
-                alt={title}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="object-contain transition-all duration-500 group-hover:scale-105"
-                style={{ opacity: isLoading ? 0 : 1 }}
-                quality={95}
-                priority={false}
-                onLoadingComplete={() => setIsLoading(false)}
-                onError={() => setImageError(true)}
-              />
+              // Use Next.js Image for internal URLs - with intrinsic sizing
+              <div className="relative w-full">
+                <Image
+                  src={thumbnailUrl}
+                  alt={title}
+                  width={1920}
+                  height={1080}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  className="w-full h-auto object-contain transition-all duration-500 group-hover:scale-105"
+                  style={{ opacity: isLoading ? 0 : 1 }}
+                  quality={95}
+                  priority={false}
+                  onLoadingComplete={() => setIsLoading(false)}
+                  onError={() => setImageError(true)}
+                />
+              </div>
             )}
           </>
         ) : (
@@ -118,7 +121,7 @@ export default function ProjectCard({ project, onClick }: ProjectCardProps) {
         )}
       </div>
 
-      {/* Overlay */}
+      {/* Overlay - positioned over the image */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent z-10 opacity-80 group-hover:opacity-70 transition-opacity duration-300" />
 
       {/* Category badge */}
