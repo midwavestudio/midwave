@@ -24,6 +24,19 @@ export async function POST(request: NextRequest) {
     console.log('Pushing changes to GitHub with message:', commitMessage);
 
     try {
+      // First check if git is available
+      try {
+        await execAsync('git --version');
+      } catch (gitCheckError) {
+        console.error('Git not available:', gitCheckError);
+        return NextResponse.json({
+          error: 'Git is not available in this environment',
+          message: 'The GitHub push feature only works in local development. In production (Vercel), Git is not available in serverless functions.',
+          suggestion: 'Use your local development environment or push directly from your code editor/terminal.',
+          isProduction: process.env.VERCEL === '1'
+        }, { status: 400 });
+      }
+
       // Check if there are any changes to commit
       const { stdout: statusOutput } = await execAsync('git status --porcelain');
       
@@ -74,6 +87,15 @@ export async function POST(request: NextRequest) {
         });
       }
       
+      if (gitError.message.includes('git: command not found') || gitError.message.includes('not found')) {
+        return NextResponse.json({
+          error: 'Git is not available in this environment',
+          message: 'The GitHub push feature only works in local development. In production (Vercel), Git is not available in serverless functions.',
+          suggestion: 'Use your local development environment or push directly from your code editor/terminal.',
+          isProduction: process.env.VERCEL === '1'
+        }, { status: 400 });
+      }
+      
       if (gitError.message.includes('Authentication failed')) {
         return NextResponse.json(
           { error: 'GitHub authentication failed. Please check your token.' },
@@ -103,7 +125,11 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   return NextResponse.json(
-    { message: 'GitHub push endpoint - use POST to push changes' },
+    { 
+      message: 'GitHub push endpoint - use POST to push changes',
+      note: 'This feature only works in local development. Git is not available in Vercel serverless functions.',
+      isProduction: process.env.VERCEL === '1'
+    },
     { status: 200 }
   );
 } 

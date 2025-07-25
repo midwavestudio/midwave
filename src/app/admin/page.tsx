@@ -73,11 +73,20 @@ export default function AdminDashboard() {
           setPushStatus({ loading: false, message: '', type: null });
         }, 5000);
       } else {
-        setPushStatus({
-          loading: false,
-          message: data.error || 'Failed to push to GitHub',
-          type: 'error'
-        });
+        // Handle specific Git not available error
+        if (data.error === 'Git is not available in this environment') {
+          setPushStatus({
+            loading: false,
+            message: `${data.message} ${data.suggestion}`,
+            type: 'error'
+          });
+        } else {
+          setPushStatus({
+            loading: false,
+            message: data.error || 'Failed to push to GitHub',
+            type: 'error'
+          });
+        }
       }
     } catch (error) {
       console.error('Error pushing to GitHub:', error);

@@ -18,6 +18,7 @@ This document provides information about the admin dashboard features and functi
 - Automatically commits all changes with a timestamp
 - Provides real-time feedback on push status
 - Requires `GITHUB_TOKEN` environment variable to be configured
+- **⚠️ Local Development Only**: This feature only works in local development environment
 
 ### Settings
 - Configure website settings and preferences
@@ -62,6 +63,31 @@ To use the GitHub push functionality:
    - Click the "Push to GitHub" button in the admin dashboard
    - The system will automatically commit all changes and push to your repository
    - Status messages will show the progress and results
+
+### Important Limitations
+
+**⚠️ Local Development Only**: The GitHub push feature only works when running the application locally (`npm run dev`). This is because:
+
+- Vercel serverless functions don't have Git installed
+- Production environments don't have access to your local Git repository
+- Serverless functions are stateless and can't maintain Git history
+
+### Alternatives for Production
+
+When working on the live site, use these alternatives:
+
+1. **Local Development Workflow** (Recommended):
+   - Make changes locally using `npm run dev`
+   - Use the GitHub push button in local admin
+   - Changes will be deployed automatically via Vercel's GitHub integration
+
+2. **Direct Git Commands**:
+   - Use your code editor's Git integration (VS Code, etc.)
+   - Use terminal: `git add .`, `git commit -m "message"`, `git push`
+
+3. **GitHub Web Interface**:
+   - Edit files directly on GitHub.com
+   - Changes will trigger automatic deployment on Vercel
 
 ## Security
 
