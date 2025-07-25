@@ -1,108 +1,70 @@
-# Midwave Studio Admin Interface
+# Admin Dashboard Documentation
 
-This document provides instructions on how to use the new admin interface for Midwave Studio. The admin interface allows you to manage your portfolio projects, including adding, editing, and deleting projects.
+This document provides information about the admin dashboard features and functionality.
 
-## Overview
+## Features
 
-The admin dashboard is accessible at `/admin` and includes the following features:
+### Project Management
+- **Add New Project**: Create portfolio projects with images and details
+- **Manage Projects**: View, edit, and delete existing projects
+- **Project Statistics**: View total projects, images, and featured projects
 
-- Dashboard overview with project statistics
-- Project management (list, create, edit, delete)
-- Image upload and management
-- Project categorization and tagging
-- Featured project selection
-- Data export and import functionality
-- Site settings configuration
+### UI Prototypes
+- Browse modern UI designs for social media marketing
+- View component showcases and prototypes
 
-## Accessing the Admin Interface
-
-Navigate to `/admin` in your browser. The admin interface uses client-side protection, which can be enhanced with proper authentication in a production environment.
-
-## Using the Admin Dashboard
-
-### Dashboard
-
-The main dashboard displays:
-- Project statistics (total projects, images, featured projects)
-- Quick action buttons
-- Recently updated projects
-
-### Managing Projects
-
-#### Viewing Projects
-
-The Projects page (`/admin/projects`) displays all your portfolio projects in a list. You can:
-- Sort projects by different criteria
-- Filter projects by category
-- Search for specific projects
-- Toggle featured status directly from the list
-
-#### Creating a New Project
-
-To create a new project:
-1. Click "New Project" from the dashboard or projects list
-2. Fill in the project details (title, description, category, etc.)
-3. Add tags to help categorize your project
-4. Upload a thumbnail and project images
-5. Toggle the "Featured" option if you want to highlight this project
-6. Click "Create Project" to save
-
-#### Editing a Project
-
-To edit an existing project:
-1. From the projects list, click the edit button next to the project
-2. Update any fields as needed
-3. Add or remove images
-4. Update tags
-5. Click "Update Project" to save changes
-
-#### Deleting a Project
-
-To delete a project:
-1. From the project edit page, click the "Delete" button
-2. Confirm the deletion in the prompt
+### GitHub Integration
+- **Push to GitHub**: One-click deployment of changes to your GitHub repository
+- Automatically commits all changes with a timestamp
+- Provides real-time feedback on push status
+- Requires `GITHUB_TOKEN` environment variable to be configured
 
 ### Settings
+- Configure website settings and preferences
+- Manage various dashboard options
 
-The Settings page (`/admin/settings`) allows you to configure:
-- Site information (title, description)
-- Portfolio display settings
-- Data management options (export/import/reset)
+## Environment Variables
 
-#### Exporting and Importing Data
+The admin dashboard requires the following environment variables:
 
-To backup your projects:
-1. Go to Settings
-2. Click "Export Data" to download a JSON file containing all your projects and settings
+```env
+# Vercel Blob Storage
+BLOB_READ_WRITE_TOKEN=your-blob-token
 
-To restore from a backup:
-1. Go to Settings
-2. Click "Import Data" and select your backup JSON file
+# Vercel KV Database  
+KV_REST_API_URL=your-kv-url
+KV_REST_API_TOKEN=your-kv-token
+KV_REST_API_READ_ONLY_TOKEN=your-kv-readonly-token
 
-## Data Storage
+# Email Configuration
+EMAIL_FROM=contact@mail.midwavestudio.com
+EMAIL_TO=midwavestudio@gmail.com
+RESEND_API_KEY=your-resend-api-key
 
-The admin interface uses browser localStorage to store project data. This allows for:
-- Persistent storage between sessions
-- Working offline
-- Easy portability
+# GitHub Integration
+GITHUB_TOKEN=your-github-personal-access-token
+```
 
-Note that localStorage has limitations:
-- Limited to approximately 5MB of data
-- Only available in the browser where it was created
-- Cleared when browser cache/data is cleared
+## GitHub Setup
 
-For production use, consider implementing a server-side storage solution.
+To use the GitHub push functionality:
 
-## Customization
+1. **Create a Personal Access Token**:
+   - Go to GitHub Settings > Developer settings > Personal access tokens
+   - Generate a new token with `repo` permissions
+   - Copy the token
 
-The admin interface is built with:
-- Next.js for the framework
-- Tailwind CSS for styling
-- React Icons for iconography
-- Client-side data management
+2. **Add to Environment Variables**:
+   - Add `GITHUB_TOKEN=your-token` to your `.env.local` file
+   - Add the same variable to your Vercel project settings
 
-You can customize the appearance and functionality by modifying the source code in the `/app/admin` directory.
+3. **Usage**:
+   - Click the "Push to GitHub" button in the admin dashboard
+   - The system will automatically commit all changes and push to your repository
+   - Status messages will show the progress and results
 
-## Support
+## Security
 
-If you encounter any issues or have questions about the admin interface, please contact the development team. 
+- All environment variables should be kept secure and never committed to version control
+- The `.env.local` file is automatically ignored by Git
+- Regularly rotate your API keys and tokens for security 
