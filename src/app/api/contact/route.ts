@@ -37,8 +37,8 @@ export async function POST(req: NextRequest) {
     }
 
     console.log('Sending email with Resend...');
-    // Use Resend's default "onboarding@resend.dev" address until domain is verified
-    const fromAddress = 'onboarding@resend.dev';
+    // Use verified domain for professional appearance
+    const fromAddress = process.env.EMAIL_FROM || 'contact@mail.midwavestudio.com';
     console.log('From:', fromAddress);
     console.log('To:', process.env.EMAIL_TO || 'midwavestudio@gmail.com');
     
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       to: process.env.EMAIL_TO || 'midwavestudio@gmail.com',
       subject: subjectLine,
       html: htmlContent,
-      reply_to: email
+      reply_to: email, // This allows you to reply directly to the person who submitted the form
     });
 
     if (error) {
@@ -68,4 +68,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

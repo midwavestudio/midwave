@@ -18,11 +18,13 @@ Resend is a modern email API service that's both reliable and easy to set up. Th
 
 ```
 RESEND_API_KEY=your-resend-api-key
-EMAIL_FROM=contact@midwavestudio.com  # Use your verified domain
-EMAIL_TO=your-email@example.com  # The email where you want to receive contact form submissions
+EMAIL_FROM=contact@mail.midwavestudio.com  # Use your verified domain (mail.midwavestudio.com)
+EMAIL_TO=midwavestudio@gmail.com  # The email where you want to receive contact form submissions
 ```
 
-4. For production use, you need to verify your domain in Resend to use an email address on your domain.
+4. **Domain Verification**: Your domain `mail.midwavestudio.com` has been verified in Resend. This allows the contact form to send emails from `contact@mail.midwavestudio.com` instead of the default `onboarding@resend.dev`.
+
+5. **Reply-To Configuration**: The contact form is configured with `reply_to` functionality, so when you reply to a contact form email, it will go directly to the person who submitted the form.
 
 ## Testing the Contact Form
 
