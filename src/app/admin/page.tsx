@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { FiPlus, FiGrid, FiImage, FiSettings, FiEye, FiLayout } from 'react-icons/fi';
+import { FiPlus, FiGrid, FiImage, FiSettings, FiEye, FiLayout, FiGithub } from 'react-icons/fi';
 import AdminDashboardLayout from './AdminDashboardLayout';
 
 interface DashboardStat {
@@ -35,6 +35,59 @@ export default function AdminDashboard() {
   ]);
   
   const [loading, setLoading] = useState(true);
+  const [pushStatus, setPushStatus] = useState<{
+    loading: boolean;
+    message: string;
+    type: 'success' | 'error' | 'info' | null;
+  }>({
+    loading: false,
+    message: '',
+    type: null
+  });
+
+  const handleGitHubPush = async () => {
+    setPushStatus({ loading: true, message: 'Pushing changes to GitHub...', type: 'info' });
+
+    try {
+      const response = await fetch('/api/github/push', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: `Admin dashboard update: ${new Date().toLocaleString()}`
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setPushStatus({
+          loading: false,
+          message: data.message,
+          type: 'success'
+        });
+        
+        // Clear success message after 5 seconds
+        setTimeout(() => {
+          setPushStatus({ loading: false, message: '', type: null });
+        }, 5000);
+      } else {
+        setPushStatus({
+          loading: false,
+          message: data.error || 'Failed to push to GitHub',
+          type: 'error'
+        });
+      }
+    } catch (error) {
+      console.error('Error pushing to GitHub:', error);
+      setPushStatus({
+        loading: false,
+        message: 'Network error: Failed to push to GitHub',
+        type: 'error'
+      });
+    }
+  };
   
   // Fetch project stats on component mount
   useEffect(() => {
@@ -122,6 +175,15 @@ export default function AdminDashboard() {
       path: '/admin/settings',
       color: 'bg-teal-600',
     },
+    {
+      title: 'Push to GitHub',
+      description: 'Push your latest changes to GitHub repository',
+      icon: <FiGithub size={24} />,
+      path: '#',
+      color: 'bg-gray-700',
+      onClick: handleGitHubPush,
+      disabled: pushStatus.loading,
+    },
   ];
   
   return (
@@ -162,21 +224,61 @@ export default function AdminDashboard() {
         {/* Quick Actions */}
         <div>
           <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
+          
+          {/* Push Status Message */}
+          {pushStatus.message && (
+            <div className={`mb-4 p-4 rounded-lg ${
+              pushStatus.type === 'success' ? 'bg-green-900/50 border border-green-500 text-green-200' :
+              pushStatus.type === 'error' ? 'bg-red-900/50 border border-red-500 text-red-200' :
+              'bg-blue-900/50 border border-blue-500 text-blue-200'
+            }`}>
+              <div className="flex items-center">
+                {pushStatus.loading && (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                )}
+                {pushStatus.message}
+              </div>
+            </div>
+          )}
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {quickActions.map((action, index) => (
-              <Link
-                key={index}
-                href={action.path}
-                className="group p-6 rounded-xl bg-gray-800 border border-gray-700 hover:border-gray-600 transition-all shadow-lg"
-              >
-                <div className={`p-3 rounded-full ${action.color} w-fit mb-4`}>
-                  {action.icon}
-                </div>
-                <h3 className="text-lg font-medium text-white group-hover:text-[#ff9240] transition-colors">
-                  {action.title}
-                </h3>
-                <p className="text-gray-400 mt-1">{action.description}</p>
-              </Link>
+              action.onClick ? (
+                <button
+                  key={index}
+                  onClick={action.onClick}
+                  disabled={action.disabled}
+                  className={`group p-6 rounded-xl bg-gray-800 border border-gray-700 hover:border-gray-600 transition-all shadow-lg text-left w-full ${
+                    action.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                  }`}
+                >
+                  <div className={`p-3 rounded-full ${action.color} w-fit mb-4 ${
+                    action.disabled ? '' : 'group-hover:scale-105 transition-transform'
+                  }`}>
+                    {action.icon}
+                  </div>
+                  <h3 className={`text-lg font-medium text-white transition-colors ${
+                    action.disabled ? '' : 'group-hover:text-[#ff9240]'
+                  }`}>
+                    {action.title}
+                  </h3>
+                  <p className="text-gray-400 mt-1">{action.description}</p>
+                </button>
+              ) : (
+                <Link
+                  key={index}
+                  href={action.path}
+                  className="group p-6 rounded-xl bg-gray-800 border border-gray-700 hover:border-gray-600 transition-all shadow-lg"
+                >
+                  <div className={`p-3 rounded-full ${action.color} w-fit mb-4`}>
+                    {action.icon}
+                  </div>
+                  <h3 className="text-lg font-medium text-white group-hover:text-[#ff9240] transition-colors">
+                    {action.title}
+                  </h3>
+                  <p className="text-gray-400 mt-1">{action.description}</p>
+                </Link>
+              )
             ))}
           </div>
         </div>
